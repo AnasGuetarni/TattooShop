@@ -1,0 +1,8 @@
+//
+// Created by Anas Guetarni on 22/11/2017.
+//
+
+#ifndef TATTOOSHOP_MAIN_FUNCTIONS
+#define TATTOOSHOP_MAIN_FUNCTIONS
+
+#endif TATTOOSHOP_MAIN_FUNCTIONS

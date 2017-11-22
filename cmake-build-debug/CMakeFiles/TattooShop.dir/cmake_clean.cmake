@@ -1,5 +1,6 @@
 file(REMOVE_RECURSE
   "CMakeFiles/TattooShop.dir/main.c.o"
+  "CMakeFiles/TattooShop.dir/main_functions.c.o"
   "TattooShop.pdb"
   "TattooShop"
 )

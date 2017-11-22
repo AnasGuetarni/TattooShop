@@ -5,6 +5,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_C
   "/Users/Anas/CLionProjects/TattooShop/main.c" "/Users/Anas/CLionProjects/TattooShop/cmake-build-debug/CMakeFiles/TattooShop.dir/main.c.o"
+  "/Users/Anas/CLionProjects/TattooShop/main_functions.c" "/Users/Anas/CLionProjects/TattooShop/cmake-build-debug/CMakeFiles/TattooShop.dir/main_functions.c.o"
   )
 set(CMAKE_C_COMPILER_ID "AppleClang")
 

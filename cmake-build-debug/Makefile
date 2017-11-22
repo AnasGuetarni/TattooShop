@@ -150,6 +150,33 @@ main.c.s:
 	$(MAKE) -f CMakeFiles/TattooShop.dir/build.make CMakeFiles/TattooShop.dir/main.c.s
 .PHONY : main.c.s
 
+main_functions.o: main_functions.c.o
+
+.PHONY : main_functions.o
+
+# target to build an object file
+main_functions.c.o:
+	$(MAKE) -f CMakeFiles/TattooShop.dir/build.make CMakeFiles/TattooShop.dir/main_functions.c.o
+.PHONY : main_functions.c.o
+
+main_functions.i: main_functions.c.i
+
+.PHONY : main_functions.i
+
+# target to preprocess a source file
+main_functions.c.i:
+	$(MAKE) -f CMakeFiles/TattooShop.dir/build.make CMakeFiles/TattooShop.dir/main_functions.c.i
+.PHONY : main_functions.c.i
+
+main_functions.s: main_functions.c.s
+
+.PHONY : main_functions.s
+
+# target to generate assembly for a file
+main_functions.c.s:
+	$(MAKE) -f CMakeFiles/TattooShop.dir/build.make CMakeFiles/TattooShop.dir/main_functions.c.s
+.PHONY : main_functions.c.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -162,6 +189,9 @@ help:
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
+	@echo "... main_functions.o"
+	@echo "... main_functions.i"
+	@echo "... main_functions.s"
 .PHONY : help
 
 

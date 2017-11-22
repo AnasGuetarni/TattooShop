@@ -35,7 +35,7 @@ Commentaires au niveau du code                              |  10 %<br/>
 Robustesse                                                  |  10 %<br/>
 
 ----------
-1 client = 1 thread
+1 client = 1 thread<br/>
 1 tatoueur = 1 thread
 
 <hr/>

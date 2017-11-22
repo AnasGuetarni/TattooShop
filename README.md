@@ -6,9 +6,9 @@ Cahier des charges
 Le cahier des charges à remplir est le suivant :
 1. Chaque client et chaque tatoueur est modélisé par un thread.
 2. Les temps de promenade et pour réaliser un tatoo sont aléatoires. Ces temps sont tirés aléatoirement dans les intervalles **[WALK_MIN_T, WALK_MAX_T] et [TATOO_MIN_T, TATOO_MAX_T]** définis en constantes (ou defines).
-3. Le programme se termine lorsque le nombre de tatouages spécifiés par l’utilisateur est atteint. Les satistiques suivantes devront être affichées sur **stderr**, avec **fprintf** :
-  ◦Combien de clients ont été tatoués par chaque tatoueur.
-  ◦Combien de fois chaque client a été tatoué.
+3. Le programme se termine lorsque le nombre de tatouages spécifiés par l’utilisateur est atteint. Les satistiques suivantes devront être affichées sur **stderr**, avec **fprintf** :<br/>
+  ◦Combien de clients ont été tatoués par chaque tatoueur.<br/>
+  ◦Combien de fois chaque client a été tatoué.<br/>
 4. Le nombre de tatouages à réaliser, le nombre de clients, le nombre de tatoueurs, et le nombre de sièges sont passés au programme sur la ligne de commande.
 5. Les clients sont servis selon leur ordre d’arrivée dans la salle d’attente (premier arrivé, premier servi).
 6. Lorsqu'un client se fait tatouer, il est synchrone avec le tatoueur ; autrement dit, le client est en attente passive pendant la durée du tatoo et c’est le tatoueur qui signale le client une fois le tatoo terminé.

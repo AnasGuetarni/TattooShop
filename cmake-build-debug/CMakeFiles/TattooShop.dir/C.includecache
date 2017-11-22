@@ -9,4 +9,16 @@
 /Users/Anas/CLionProjects/TattooShop/main.c
 stdio.h
 -
+stdlib.h
+-
+pthread.h
+-
+main_functions.h
+/Users/Anas/CLionProjects/TattooShop/main_functions.h
+
+/Users/Anas/CLionProjects/TattooShop/main_functions.c
+main_functions.h
+/Users/Anas/CLionProjects/TattooShop/main_functions.h
+
+/Users/Anas/CLionProjects/TattooShop/main_functions.h
 

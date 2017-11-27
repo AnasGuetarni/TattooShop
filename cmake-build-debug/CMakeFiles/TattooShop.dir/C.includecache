@@ -13,6 +13,8 @@ stdlib.h
 -
 pthread.h
 -
+assert.h
+-
 main_functions.h
 /Users/Anas/CLionProjects/TattooShop/main_functions.h
 

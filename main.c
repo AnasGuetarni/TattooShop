@@ -6,39 +6,27 @@
 //  Copyright © 2017 Anas Guetarni. All rights reserved.
 //
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
 #include <assert.h>
+#include <ntsid.h>
 #include "main_functions.h"
+#include "thread_wrapper.h"
 
-#define WALK_MIN_T 30
-#define WALK_MAX_T 50
-#define TATOO_MIN_T 5
-#define TATOO_MAX_T 10
+int count_threads = 0;
 
-typedef struct promenadeT {
-    int walk_min_t;
-    int walk_max_t;
-} promenade_t;
+void *thread(void *id_thread) {
+    int id = *((int *) id_thread);
+    printf(ANSI_COLOR_RED "id thread: %i" ANSI_COLOR_RESET "\n",id);
 
-typedef struct tattouageT {
-    int tatoo_min_t;
-    int tatoo_max_t;
-} tattouage_t;
-
-void *thread(void *args) {
-
+    pthread_mutex_lock(&mutex_salle_attente);
+    // section critique
+    count_threads++;
+    printf(ANSI_COLOR_BLUE "count_threads: %i" ANSI_COLOR_RESET "\n", count_threads);
+    // fin section critique
+    pthread_mutex_unlock(&mutex_salle_attente);
     return EXIT_SUCCESS;
-}
-
-int randomWalk(promenade_t unePromenade){
-    return rand()%(unePromenade.walk_max_t-unePromenade.walk_min_t)+unePromenade.walk_min_t;
-}
-
-int randomTatoo(tattouage_t unTatoo){
-    return rand()%(unTatoo.tatoo_max_t-unTatoo.tatoo_min_t)+unTatoo.tatoo_min_t;
 }
 
 int main(int argc, const char * argv[]) {
@@ -55,12 +43,12 @@ int main(int argc, const char * argv[]) {
 
     int num_threads = number_clients+number_tatoueurs;
 
-    printf("Number of tattoos: %i\n", number_tattoos);
-    printf("Number of clients: %i\n", number_clients);
-    printf("Number of tattoueurs: %i\n", number_tatoueurs);
-    printf("Number of sieges: %i\n", number_sieges);
+    printf(ANSI_COLOR_GREEN "Number of tattoos: %i" ANSI_COLOR_RESET "\n", number_tattoos);
+    printf(ANSI_COLOR_GREEN "Number of clients: %i" ANSI_COLOR_RESET "\n", number_clients);
+    printf(ANSI_COLOR_GREEN "Number of tattoueurs: %i" ANSI_COLOR_RESET "\n", number_tatoueurs);
+    printf(ANSI_COLOR_GREEN "Number of sieges: %i" ANSI_COLOR_RESET "\n", number_sieges);
 
-    printf("num_threads to create: %i\n",num_threads);
+    printf(ANSI_COLOR_RED "num_threads to create: %i" ANSI_COLOR_RESET "\n",num_threads);
 
     promenade_t maPromenade;
     maPromenade.walk_min_t = WALK_MIN_T;
@@ -70,25 +58,58 @@ int main(int argc, const char * argv[]) {
     monTatoo.tatoo_min_t = TATOO_MIN_T;
     monTatoo.tatoo_max_t = TATOO_MAX_T;
 
-    printf("walkMin: %i\n", maPromenade.walk_min_t);
-    printf("walkMax: %i\n", maPromenade.walk_max_t);
+    printf(ANSI_COLOR_YELLOW "walkMin: %i" ANSI_COLOR_RESET "\n", maPromenade.walk_min_t);
+    printf(ANSI_COLOR_YELLOW "walkMax: %i" ANSI_COLOR_RESET "\n", maPromenade.walk_max_t);
 
-    printf("tatooMin: %i\n", monTatoo.tatoo_min_t);
-    printf("tatooMax: %i\n", monTatoo.tatoo_max_t);
+    printf(ANSI_COLOR_YELLOW "tatooMin: %i" ANSI_COLOR_RESET "\n", monTatoo.tatoo_min_t);
+    printf(ANSI_COLOR_YELLOW "tatooMax: %i" ANSI_COLOR_RESET "\n", monTatoo.tatoo_max_t);
 
     int result_random_walk = randomWalk(maPromenade);
     int result_random_tatoo = randomTatoo(monTatoo);
 
-    printf("result_random_walk: %i\n",result_random_walk);
-    printf("result_random_tatoo: %i\n",result_random_tatoo);
+    printf(ANSI_COLOR_RED "result_random_walk: %i" ANSI_COLOR_RESET "\n",result_random_walk);
+    printf(ANSI_COLOR_RED "result_random_tatoo: %i" ANSI_COLOR_RESET "\n",result_random_tatoo);
 
     assert(result_random_walk <= maPromenade.walk_max_t && result_random_walk >= maPromenade.walk_min_t);
     assert(result_random_tatoo <= monTatoo.tatoo_max_t && result_random_tatoo >= monTatoo.tatoo_min_t);
 
+    tattoueur_t all_tatoueurs[number_tatoueurs];
+    client_t all_clients[number_clients];
+
+    int nombre_seats_per_tattoueurs = number_sieges/number_tatoueurs;
+    int reste_nombre_seats_per_tattoueurs = number_sieges%number_tatoueurs;
+
+    for (int i = 0; i<number_tatoueurs;i++){
+        all_tatoueurs[i].id_tatoueur = i;
+        printf(ANSI_COLOR_CYAN "Id tatoueur: %i" ANSI_COLOR_RESET "\n", all_tatoueurs[i].id_tatoueur);
+        if (i == number_tatoueurs)
+            all_tatoueurs[i].number_seats = nombre_seats_per_tattoueurs+reste_nombre_seats_per_tattoueurs;
+        else
+            all_tatoueurs[i].number_seats = nombre_seats_per_tattoueurs;
+        printf(ANSI_COLOR_CYAN "Number seats tatoueur: %i" ANSI_COLOR_RESET "\n", all_tatoueurs[i].number_seats);
+
+        all_tatoueurs[i].time_tatoo = randomTatoo(monTatoo);
+        printf(ANSI_COLOR_CYAN "Time tatoo: %i" ANSI_COLOR_RESET "\n", all_tatoueurs[i].time_tatoo);
+    }
+
+    for (int j = 0; j < number_clients; ++j) {
+        all_clients[j].id_client = j;
+        printf(ANSI_COLOR_MAGENTA "Id client: %i" ANSI_COLOR_RESET "\n", all_clients[j].id_client);
+
+        all_clients[j].time_promenade = randomWalk(maPromenade);
+        printf(ANSI_COLOR_MAGENTA "Time balade: %i" ANSI_COLOR_RESET "\n", all_clients[j].time_promenade);
+    }
+
+    if (pthread_mutex_init(&mutex_salle_attente, NULL) != 0)
+    {
+        fprintf(stderr,"\n mutex init failed\n");
+        return 1;
+    }
+
     pthread_t threads[num_threads];
 
     for (int i = 0; i < num_threads; ++i) {
-        int code = pthread_create(&threads[i], NULL, thread, NULL);
+        int code = pthread_create(&threads[i], NULL, thread, &i);
 
         assert(code == 0);
 
@@ -106,6 +127,8 @@ int main(int argc, const char * argv[]) {
             return EXIT_FAILURE;
         }
     }
+
+    pthread_mutex_destroy(&mutex_salle_attente);
 
     return EXIT_SUCCESS;
 }

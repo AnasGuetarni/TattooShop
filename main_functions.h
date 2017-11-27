@@ -47,6 +47,12 @@ typedef struct {
     pthread_mutex_t *block;
 } barrier_t;
 
+typedef struct salleAttenteT{
+    int nombre_seats_available;
+    int nombre_seats_const;
+    client_t *client;
+}salleAttente_t;
+
 pthread_mutex_t mutex_salle_attente;
 sem_t semaphore_balade;
 barrier_t barrier;

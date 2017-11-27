@@ -19,6 +19,8 @@ ntsid.h
 -
 main_functions.h
 /Users/Anas/CLionProjects/TattooShop/main_functions.h
+thread_wrapper.h
+/Users/Anas/CLionProjects/TattooShop/thread_wrapper.h
 
 /Users/Anas/CLionProjects/TattooShop/main_functions.c
 stdlib.h
@@ -27,6 +29,14 @@ ntsid.h
 -
 main_functions.h
 /Users/Anas/CLionProjects/TattooShop/main_functions.h
+thread_wrapper.h
+/Users/Anas/CLionProjects/TattooShop/thread_wrapper.h
 
 /Users/Anas/CLionProjects/TattooShop/main_functions.h
+semaphore.h
+-
+
+/Users/Anas/CLionProjects/TattooShop/thread_wrapper.h
+pthread.h
+-
 

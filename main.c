@@ -20,6 +20,10 @@ void *thread(void *id_thread) {
     int id = *((int *) id_thread);
     printf(ANSI_COLOR_RED "id thread: %i" ANSI_COLOR_RESET "\n",id);
 
+    printf("Thread %d waiting at barrier...\n", id);
+    barrier_wait(&barrier);
+    printf("Thread %d passed the barrier!\n", id);
+
     pthread_mutex_lock(&mutex_salle_attente);
     // section critique
     count_threads++;
@@ -39,14 +43,19 @@ int main(int argc, const char * argv[]) {
     int number_tattoos = atoi(argv[1]);
     int number_clients = atoi(argv[2]);
     int number_tatoueurs = atoi(argv[3]);
-    int number_sieges = atoi(argv[4]);
+    int number_sieges_salle_attente = atoi(argv[4]);
+
+    salleAttente_t listeAttente;
+    listeAttente.nombre_seats_available = number_sieges_salle_attente;
+    listeAttente.nombre_seats_const= number_sieges_salle_attente;
+    listeAttente.client = malloc(sizeof(client_t)*number_sieges_salle_attente);
 
     int num_threads = number_clients+number_tatoueurs;
 
     printf(ANSI_COLOR_GREEN "Number of tattoos: %i" ANSI_COLOR_RESET "\n", number_tattoos);
     printf(ANSI_COLOR_GREEN "Number of clients: %i" ANSI_COLOR_RESET "\n", number_clients);
     printf(ANSI_COLOR_GREEN "Number of tattoueurs: %i" ANSI_COLOR_RESET "\n", number_tatoueurs);
-    printf(ANSI_COLOR_GREEN "Number of sieges: %i" ANSI_COLOR_RESET "\n", number_sieges);
+    printf(ANSI_COLOR_GREEN "Number of sieges: %i" ANSI_COLOR_RESET "\n", number_sieges_salle_attente);
 
     printf(ANSI_COLOR_RED "num_threads to create: %i" ANSI_COLOR_RESET "\n",num_threads);
 
@@ -76,8 +85,8 @@ int main(int argc, const char * argv[]) {
     tattoueur_t all_tatoueurs[number_tatoueurs];
     client_t all_clients[number_clients];
 
-    int nombre_seats_per_tattoueurs = number_sieges/number_tatoueurs;
-    int reste_nombre_seats_per_tattoueurs = number_sieges%number_tatoueurs;
+    int nombre_seats_per_tattoueurs = number_sieges_salle_attente/number_tatoueurs;
+    int reste_nombre_seats_per_tattoueurs = number_sieges_salle_attente%number_tatoueurs;
 
     for (int i = 0; i<number_tatoueurs;i++){
         all_tatoueurs[i].id_tatoueur = i;
@@ -106,6 +115,8 @@ int main(int argc, const char * argv[]) {
         return 1;
     }
 
+    barrier_init(&barrier, num_threads+1);
+
     pthread_t threads[num_threads];
 
     for (int i = 0; i < num_threads; ++i) {
@@ -117,8 +128,14 @@ int main(int argc, const char * argv[]) {
             fprintf(stderr, "pthread_create failed!\n");
             return EXIT_FAILURE;
         }
+    }
 
-        int codeJoin = pthread_join(threads[i], NULL) != 0;
+    puts("Thread main waiting at barrier...");
+    barrier_wait(&barrier);
+    puts("Thread main passed the barrier!");
+
+    for (int k = 0; k < num_threads; ++k) {
+        int codeJoin = pthread_join(threads[k], NULL) != 0;
 
         assert(codeJoin == 0);
 
@@ -129,6 +146,7 @@ int main(int argc, const char * argv[]) {
     }
 
     pthread_mutex_destroy(&mutex_salle_attente);
+    barrier_destroy(&barrier);
 
     return EXIT_SUCCESS;
 }

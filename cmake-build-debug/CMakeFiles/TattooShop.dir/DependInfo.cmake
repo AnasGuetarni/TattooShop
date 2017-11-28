@@ -6,6 +6,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 set(CMAKE_DEPENDS_CHECK_C
   "/Users/Anas/CLionProjects/TattooShop/main.c" "/Users/Anas/CLionProjects/TattooShop/cmake-build-debug/CMakeFiles/TattooShop.dir/main.c.o"
   "/Users/Anas/CLionProjects/TattooShop/main_functions.c" "/Users/Anas/CLionProjects/TattooShop/cmake-build-debug/CMakeFiles/TattooShop.dir/main_functions.c.o"
+  "/Users/Anas/CLionProjects/TattooShop/thread_wrapper.c" "/Users/Anas/CLionProjects/TattooShop/cmake-build-debug/CMakeFiles/TattooShop.dir/thread_wrapper.c.o"
   )
 set(CMAKE_C_COMPILER_ID "AppleClang")
 

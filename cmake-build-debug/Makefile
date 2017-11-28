@@ -177,6 +177,33 @@ main_functions.c.s:
 	$(MAKE) -f CMakeFiles/TattooShop.dir/build.make CMakeFiles/TattooShop.dir/main_functions.c.s
 .PHONY : main_functions.c.s
 
+thread_wrapper.o: thread_wrapper.c.o
+
+.PHONY : thread_wrapper.o
+
+# target to build an object file
+thread_wrapper.c.o:
+	$(MAKE) -f CMakeFiles/TattooShop.dir/build.make CMakeFiles/TattooShop.dir/thread_wrapper.c.o
+.PHONY : thread_wrapper.c.o
+
+thread_wrapper.i: thread_wrapper.c.i
+
+.PHONY : thread_wrapper.i
+
+# target to preprocess a source file
+thread_wrapper.c.i:
+	$(MAKE) -f CMakeFiles/TattooShop.dir/build.make CMakeFiles/TattooShop.dir/thread_wrapper.c.i
+.PHONY : thread_wrapper.c.i
+
+thread_wrapper.s: thread_wrapper.c.s
+
+.PHONY : thread_wrapper.s
+
+# target to generate assembly for a file
+thread_wrapper.c.s:
+	$(MAKE) -f CMakeFiles/TattooShop.dir/build.make CMakeFiles/TattooShop.dir/thread_wrapper.c.s
+.PHONY : thread_wrapper.c.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -192,6 +219,9 @@ help:
 	@echo "... main_functions.o"
 	@echo "... main_functions.i"
 	@echo "... main_functions.s"
+	@echo "... thread_wrapper.o"
+	@echo "... thread_wrapper.i"
+	@echo "... thread_wrapper.s"
 .PHONY : help
 
 

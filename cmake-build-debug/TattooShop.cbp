@@ -89,6 +89,12 @@
 		<Unit filename="/Users/Anas/CLionProjects/TattooShop/main_functions.h">
 			<Option target="TattooShop"/>
 		</Unit>
+		<Unit filename="/Users/Anas/CLionProjects/TattooShop/thread_wrapper.c">
+			<Option target="TattooShop"/>
+		</Unit>
+		<Unit filename="/Users/Anas/CLionProjects/TattooShop/thread_wrapper.h">
+			<Option target="TattooShop"/>
+		</Unit>
 		<Unit filename="/Users/Anas/CLionProjects/TattooShop/CMakeLists.txt">
 			<Option virtualFolder="CMake Files\"/>
 		</Unit>

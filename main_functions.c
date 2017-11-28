@@ -15,6 +15,7 @@ int randomTatoo(tattouage_t unTatoo){
     return rand()%(unTatoo.tatoo_max_t-unTatoo.tatoo_min_t)+unTatoo.tatoo_min_t;
 }
 
+/*
 void barrier_init(barrier_t *b, int count) {
     b->count = count;
     b->mutex = mutex_create();
@@ -37,3 +38,4 @@ void barrier_destroy(barrier_t *b) {
     mutex_destroy(b->mutex);
     mutex_destroy(b->block);
 }
+ */

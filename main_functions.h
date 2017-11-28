@@ -6,6 +6,12 @@
 #define TATTOOSHOP_MAIN_FUNCTIONS
 
 #include <semaphore.h>
+#include <sched.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <time.h>
+#include <errno.h>
 
 #define WALK_MIN_T 30
 #define WALK_MAX_T 50
@@ -53,7 +59,13 @@ typedef struct salleAttenteT{
     client_t *client;
 }salleAttente_t;
 
+typedef struct paramT {
+    int id_thread;
+    salleAttente_t sale_attente;
+}param_t;
+
 pthread_mutex_t mutex_salle_attente;
+pthread_mutex_t mutex_salle_attente_2;
 sem_t semaphore_balade;
 barrier_t barrier;
 

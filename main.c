@@ -16,13 +16,14 @@
 
 int count_threads = 0;
 
-void *thread(void *id_thread) {
-    int id = *((int *) id_thread);
-    printf(ANSI_COLOR_RED "id thread: %i" ANSI_COLOR_RESET "\n",id);
+void *client(void *params) {
+    param_t *test = (param_t*) params;
 
-    printf("Thread %d waiting at barrier...\n", id);
-    barrier_wait(&barrier);
-    printf("Thread %d passed the barrier!\n", id);
+    printf(ANSI_COLOR_RED "id thread: %i" ANSI_COLOR_RESET "\n",test->id_thread);
+    printf(ANSI_COLOR_RED "seats available: %i" ANSI_COLOR_RESET "\n",test->sale_attente.nombre_seats_available);
+    printf(ANSI_COLOR_RED "seats const: %i" ANSI_COLOR_RESET "\n",test->sale_attente.nombre_seats_const);
+
+    //nanosleep()
 
     pthread_mutex_lock(&mutex_salle_attente);
     // section critique
@@ -30,6 +31,13 @@ void *thread(void *id_thread) {
     printf(ANSI_COLOR_BLUE "count_threads: %i" ANSI_COLOR_RESET "\n", count_threads);
     // fin section critique
     pthread_mutex_unlock(&mutex_salle_attente);
+
+    pthread_mutex_lock(&mutex_salle_attente_2);
+    // section critique 2
+    count_threads++;
+    printf(ANSI_COLOR_BLUE "count_threads: %i" ANSI_COLOR_RESET "\n", count_threads);
+    // fin section critique 2
+    pthread_mutex_unlock(&mutex_salle_attente_2);
     return EXIT_SUCCESS;
 }
 
@@ -109,18 +117,16 @@ int main(int argc, const char * argv[]) {
         printf(ANSI_COLOR_MAGENTA "Time balade: %i" ANSI_COLOR_RESET "\n", all_clients[j].time_promenade);
     }
 
-    if (pthread_mutex_init(&mutex_salle_attente, NULL) != 0)
-    {
-        fprintf(stderr,"\n mutex init failed\n");
-        return 1;
-    }
-
-    barrier_init(&barrier, num_threads+1);
 
     pthread_t threads[num_threads];
+    param_t params;
+
 
     for (int i = 0; i < num_threads; ++i) {
-        int code = pthread_create(&threads[i], NULL, thread, &i);
+        params.id_thread = i;
+        params.sale_attente.nombre_seats_available = listeAttente.nombre_seats_available;
+        params.sale_attente.nombre_seats_const = listeAttente.nombre_seats_const;
+        int code = pthread_create(&threads[i], NULL, client, &params);
 
         assert(code == 0);
 
@@ -128,14 +134,8 @@ int main(int argc, const char * argv[]) {
             fprintf(stderr, "pthread_create failed!\n");
             return EXIT_FAILURE;
         }
-    }
 
-    puts("Thread main waiting at barrier...");
-    barrier_wait(&barrier);
-    puts("Thread main passed the barrier!");
-
-    for (int k = 0; k < num_threads; ++k) {
-        int codeJoin = pthread_join(threads[k], NULL) != 0;
+        int codeJoin = pthread_join(threads[i], NULL) != 0;
 
         assert(codeJoin == 0);
 
@@ -146,7 +146,7 @@ int main(int argc, const char * argv[]) {
     }
 
     pthread_mutex_destroy(&mutex_salle_attente);
-    barrier_destroy(&barrier);
+    pthread_mutex_destroy(&mutex_salle_attente_2);
 
     return EXIT_SUCCESS;
 }

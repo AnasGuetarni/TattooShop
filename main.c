@@ -10,7 +10,6 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <assert.h>
-#include <ntsid.h>
 #include "main_functions.h"
 #include "thread_wrapper.h"
 

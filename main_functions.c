@@ -3,7 +3,6 @@
 //
 
 #include <stdlib.h>
-#include <ntsid.h>
 #include "main_functions.h"
 #include "thread_wrapper.h"
 

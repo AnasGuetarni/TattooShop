@@ -38,7 +38,6 @@ typedef struct tattouageT {
 
 typedef struct tatoueurT {
     int id_tatoueur;
-    int number_seats;
     int time_tatoo;
 }tattoueur_t;
 
@@ -57,6 +56,7 @@ typedef struct salleAttenteT{
     int nombre_seats_available;
     int nombre_seats_const;
     client_t *client;
+    tattoueur_t *tattoueurs;
 }salleAttente_t;
 
 typedef struct paramT {

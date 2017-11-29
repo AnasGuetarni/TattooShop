@@ -17,27 +17,57 @@
 int count_threads = 0;
 
 void *client(void *params) {
-    param_t *test = (param_t*) params;
+    param_t *param = (param_t*) params;
 
-    printf(ANSI_COLOR_RED "id thread: %i" ANSI_COLOR_RESET "\n",test->id_thread);
-    printf(ANSI_COLOR_RED "seats available: %i" ANSI_COLOR_RESET "\n",test->sale_attente.nombre_seats_available);
-    printf(ANSI_COLOR_RED "seats const: %i" ANSI_COLOR_RESET "\n",test->sale_attente.nombre_seats_const);
+    int id = param->id_thread;
 
-    //nanosleep()
+    printf(ANSI_COLOR_RED "id thread: %i" ANSI_COLOR_RESET "\n",param->id_thread);
+    printf(ANSI_COLOR_RED "seats available: %i" ANSI_COLOR_RESET "\n",param->sale_attente.nombre_seats_available);
+    printf(ANSI_COLOR_RED "seats const: %i" ANSI_COLOR_RESET "\n",param->sale_attente.nombre_seats_const);
+    printf("id client in thread: %i\n",param->sale_attente.client[id].id_client);
+    printf("time client in thread: %i\n",param->sale_attente.client[id].time_promenade);
+    printf("id tatoueur in thread: %i\n",param->sale_attente.tattoueurs[id].id_tatoueur);
+    printf("time tatoueur in thread: %i\n",param->sale_attente.tattoueurs[id].time_tatoo);
 
-    pthread_mutex_lock(&mutex_salle_attente);
-    // section critique
-    count_threads++;
-    printf(ANSI_COLOR_BLUE "count_threads: %i" ANSI_COLOR_RESET "\n", count_threads);
-    // fin section critique
-    pthread_mutex_unlock(&mutex_salle_attente);
+    param->sale_attente.tattoueurs[id] = param->sale_attente.tattoueurs[param->sale_attente.nombre_seats_const-param->sale_attente.nombre_seats_available];
+    printf("Tatoueur id: %i\n", param->sale_attente.tattoueurs[id]);
 
-    pthread_mutex_lock(&mutex_salle_attente_2);
-    // section critique 2
-    count_threads++;
-    printf(ANSI_COLOR_BLUE "count_threads: %i" ANSI_COLOR_RESET "\n", count_threads);
-    // fin section critique 2
-    pthread_mutex_unlock(&mutex_salle_attente_2);
+    struct timespec ts;
+    ts.tv_sec = param->sale_attente.client[id].time_promenade / 10;
+    ts.tv_nsec = 0;
+
+    struct timespec ts2;
+    ts.tv_sec = param->sale_attente.tattoueurs[id].time_tatoo;
+    ts.tv_nsec = 0;
+
+    printf("C'est partit pour une balade pour le client %i\n", param->sale_attente.client[id].id_client);
+
+    if (nanosleep(&ts, NULL) != 0){
+        fprintf(stderr, "Nanosleep error");
+        return EXIT_FAILURE;
+    }
+
+    do {
+        pthread_mutex_lock(&mutex_salle_attente);
+        param->sale_attente.nombre_seats_available--;
+        pthread_mutex_unlock(&mutex_salle_attente);
+
+        // On laisse le temps au tattoueur de tatouer
+        printf("Le client %i se fait hagar par le tatoueur %i\n", param->sale_attente.client[id].id_client, param->sale_attente.tattoueurs[id].id_tatoueur);
+
+        if (nanosleep(&ts2, NULL) != 0){
+            fprintf(stderr, "Nanosleep error");
+            return EXIT_FAILURE;
+        }
+
+        printf("Le client %i a finit de se faire hagar par le tatoueur %i\n", param->sale_attente.client[id].id_client, param->sale_attente.tattoueurs[id].id_tatoueur);
+
+        pthread_mutex_lock(&mutex_salle_attente_2);
+        param->sale_attente.nombre_seats_available++;
+        pthread_mutex_unlock(&mutex_salle_attente_2);
+
+    } while (param->sale_attente.nombre_seats_available <= 0);
+
     return EXIT_SUCCESS;
 }
 
@@ -53,19 +83,12 @@ int main(int argc, const char * argv[]) {
     int number_tatoueurs = atoi(argv[3]);
     int number_sieges_salle_attente = atoi(argv[4]);
 
-    salleAttente_t listeAttente;
-    listeAttente.nombre_seats_available = number_sieges_salle_attente;
-    listeAttente.nombre_seats_const= number_sieges_salle_attente;
-    listeAttente.client = malloc(sizeof(client_t)*number_sieges_salle_attente);
-
-    int num_threads = number_clients+number_tatoueurs;
-
     printf(ANSI_COLOR_GREEN "Number of tattoos: %i" ANSI_COLOR_RESET "\n", number_tattoos);
     printf(ANSI_COLOR_GREEN "Number of clients: %i" ANSI_COLOR_RESET "\n", number_clients);
     printf(ANSI_COLOR_GREEN "Number of tattoueurs: %i" ANSI_COLOR_RESET "\n", number_tatoueurs);
     printf(ANSI_COLOR_GREEN "Number of sieges: %i" ANSI_COLOR_RESET "\n", number_sieges_salle_attente);
 
-    printf(ANSI_COLOR_RED "num_threads to create: %i" ANSI_COLOR_RESET "\n",num_threads);
+    printf(ANSI_COLOR_RED "num_threads to create: %i" ANSI_COLOR_RESET "\n",number_clients+number_tatoueurs);
 
     promenade_t maPromenade;
     maPromenade.walk_min_t = WALK_MIN_T;
@@ -75,58 +98,55 @@ int main(int argc, const char * argv[]) {
     monTatoo.tatoo_min_t = TATOO_MIN_T;
     monTatoo.tatoo_max_t = TATOO_MAX_T;
 
-    printf(ANSI_COLOR_YELLOW "walkMin: %i" ANSI_COLOR_RESET "\n", maPromenade.walk_min_t);
-    printf(ANSI_COLOR_YELLOW "walkMax: %i" ANSI_COLOR_RESET "\n", maPromenade.walk_max_t);
+    salleAttente_t listeAttente;
+    listeAttente.nombre_seats_available = number_sieges_salle_attente;
+    listeAttente.nombre_seats_const= number_sieges_salle_attente;
+    listeAttente.client = malloc(sizeof(client_t)*number_sieges_salle_attente);
 
-    printf(ANSI_COLOR_YELLOW "tatooMin: %i" ANSI_COLOR_RESET "\n", monTatoo.tatoo_min_t);
-    printf(ANSI_COLOR_YELLOW "tatooMax: %i" ANSI_COLOR_RESET "\n", monTatoo.tatoo_max_t);
+    assert(randomWalk(maPromenade) <= maPromenade.walk_max_t && randomWalk(maPromenade) >= maPromenade.walk_min_t);
+    assert(randomTatoo(monTatoo) <= monTatoo.tatoo_max_t && randomTatoo(monTatoo) >= monTatoo.tatoo_min_t);
 
-    int result_random_walk = randomWalk(maPromenade);
-    int result_random_tatoo = randomTatoo(monTatoo);
-
-    printf(ANSI_COLOR_RED "result_random_walk: %i" ANSI_COLOR_RESET "\n",result_random_walk);
-    printf(ANSI_COLOR_RED "result_random_tatoo: %i" ANSI_COLOR_RESET "\n",result_random_tatoo);
-
-    assert(result_random_walk <= maPromenade.walk_max_t && result_random_walk >= maPromenade.walk_min_t);
-    assert(result_random_tatoo <= monTatoo.tatoo_max_t && result_random_tatoo >= monTatoo.tatoo_min_t);
-
-    tattoueur_t all_tatoueurs[number_tatoueurs];
-    client_t all_clients[number_clients];
-
-    int nombre_seats_per_tattoueurs = number_sieges_salle_attente/number_tatoueurs;
-    int reste_nombre_seats_per_tattoueurs = number_sieges_salle_attente%number_tatoueurs;
+    tattoueur_t *all_tatoueurs = malloc(sizeof(client_t)*number_tatoueurs);
+    client_t *all_clients = malloc(sizeof(client_t)*number_clients);
 
     for (int i = 0; i<number_tatoueurs;i++){
         all_tatoueurs[i].id_tatoueur = i;
         printf(ANSI_COLOR_CYAN "Id tatoueur: %i" ANSI_COLOR_RESET "\n", all_tatoueurs[i].id_tatoueur);
-        if (i == number_tatoueurs)
-            all_tatoueurs[i].number_seats = nombre_seats_per_tattoueurs+reste_nombre_seats_per_tattoueurs;
-        else
-            all_tatoueurs[i].number_seats = nombre_seats_per_tattoueurs;
-        printf(ANSI_COLOR_CYAN "Number seats tatoueur: %i" ANSI_COLOR_RESET "\n", all_tatoueurs[i].number_seats);
 
         all_tatoueurs[i].time_tatoo = randomTatoo(monTatoo);
         printf(ANSI_COLOR_CYAN "Time tatoo: %i" ANSI_COLOR_RESET "\n", all_tatoueurs[i].time_tatoo);
     }
 
-    for (int j = 0; j < number_clients; ++j) {
+    for (int j = 0; j < number_clients; j++) {
         all_clients[j].id_client = j;
+        printf(ANSI_COLOR_MAGENTA "j client: %i" ANSI_COLOR_RESET "\n", j);
         printf(ANSI_COLOR_MAGENTA "Id client: %i" ANSI_COLOR_RESET "\n", all_clients[j].id_client);
 
         all_clients[j].time_promenade = randomWalk(maPromenade);
         printf(ANSI_COLOR_MAGENTA "Time balade: %i" ANSI_COLOR_RESET "\n", all_clients[j].time_promenade);
     }
 
+    listeAttente.client = all_clients;
+    listeAttente.tattoueurs = all_tatoueurs;
 
-    pthread_t threads[num_threads];
+
+    pthread_t threads_clients[number_clients];
     param_t params;
 
+    for (int k = 0; k < number_clients; ++k) {
+        params.sale_attente.client = listeAttente.client;
+    }
+    for (int l = 0; l < number_tatoueurs; ++l) {
+        params.sale_attente.tattoueurs = listeAttente.tattoueurs;
+    }
 
-    for (int i = 0; i < num_threads; ++i) {
+
+    for (int i = 0; i < number_clients; ++i) {
         params.id_thread = i;
         params.sale_attente.nombre_seats_available = listeAttente.nombre_seats_available;
         params.sale_attente.nombre_seats_const = listeAttente.nombre_seats_const;
-        int code = pthread_create(&threads[i], NULL, client, &params);
+
+        int code = pthread_create(&threads_clients[i], NULL, client, &params);
 
         assert(code == 0);
 
@@ -135,7 +155,7 @@ int main(int argc, const char * argv[]) {
             return EXIT_FAILURE;
         }
 
-        int codeJoin = pthread_join(threads[i], NULL) != 0;
+        int codeJoin = pthread_join(threads_clients[i], NULL) != 0;
 
         assert(codeJoin == 0);
 

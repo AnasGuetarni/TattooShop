@@ -65,12 +65,11 @@ typedef struct paramT {
 }param_t;
 
 pthread_mutex_t mutex_salle_attente;
-pthread_mutex_t mutex_salle_attente_2;
 sem_t semaphore_balade;
 barrier_t barrier;
 
-int randomWalk(promenade_t unePromenade);
-int randomTatoo(tattouage_t unTatoo);
+int randomWalk(int a, int b);
+int randomTatoo(int a, int b);
 void barrier_init(barrier_t *b, int count);
 void barrier_wait(barrier_t *b);
 void barrier_destroy(barrier_t *b);

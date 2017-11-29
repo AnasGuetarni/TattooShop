@@ -3,16 +3,15 @@
 //
 
 #include <stdlib.h>
-#include <ntsid.h>
 #include "main_functions.h"
 #include "thread_wrapper.h"
 
-int randomWalk(promenade_t unePromenade){
-    return rand()%(unePromenade.walk_max_t-unePromenade.walk_min_t)+unePromenade.walk_min_t;
+int randomWalk(int value_min, int value_max){
+    return rand()%(value_max-value_min)+value_min;
 }
 
-int randomTatoo(tattouage_t unTatoo){
-    return rand()%(unTatoo.tatoo_max_t-unTatoo.tatoo_min_t)+unTatoo.tatoo_min_t;
+int randomTatoo(int value_min, int value_max){
+    return rand()%(value_max-value_min)+value_min;
 }
 
 /*

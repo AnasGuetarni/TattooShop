@@ -10,11 +10,9 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <assert.h>
-#include <ntsid.h>
 #include "main_functions.h"
 #include "thread_wrapper.h"
 
-int count_threads = 0;
 
 void *client(void *params) {
     param_t *param = (param_t*) params;
@@ -33,11 +31,11 @@ void *client(void *params) {
     printf("Tatoueur id: %i\n", param->sale_attente.tattoueurs[id]);
 
     struct timespec ts;
-    ts.tv_sec = param->sale_attente.client[id].time_promenade / 10;
+    ts.tv_sec = param->sale_attente.client[id].time_promenade / 100;
     ts.tv_nsec = 0;
 
     struct timespec ts2;
-    ts.tv_sec = param->sale_attente.tattoueurs[id].time_tatoo;
+    ts.tv_sec = param->sale_attente.tattoueurs[id].time_tatoo / 10;
     ts.tv_nsec = 0;
 
     printf("C'est partit pour une balade pour le client %i\n", param->sale_attente.client[id].id_client);
@@ -52,19 +50,23 @@ void *client(void *params) {
         param->sale_attente.nombre_seats_available--;
         pthread_mutex_unlock(&mutex_salle_attente);
 
-        // On laisse le temps au tattoueur de tatouer
-        printf("Le client %i se fait hagar par le tatoueur %i\n", param->sale_attente.client[id].id_client, param->sale_attente.tattoueurs[id].id_tatoueur);
+        if (param->sale_attente.nombre_seats_available > 0){
+            // On laisse le temps au tattoueur de tatouer
+            printf("Le client %i se fait hagar par le tatoueur %i\n", param->sale_attente.client[id].id_client, param->sale_attente.tattoueurs[id].id_tatoueur);
 
-        if (nanosleep(&ts2, NULL) != 0){
-            fprintf(stderr, "Nanosleep error");
-            return EXIT_FAILURE;
+            if (nanosleep(&ts2, NULL) != 0){
+                fprintf(stderr, "Nanosleep error");
+                return EXIT_FAILURE;
+            }
         }
+        else
+            printf("Le client %i ne se fait pas hagar par le tatoueur %i\n", param->sale_attente.client[id].id_client, param->sale_attente.tattoueurs[id].id_tatoueur);
 
         printf("Le client %i a finit de se faire hagar par le tatoueur %i\n", param->sale_attente.client[id].id_client, param->sale_attente.tattoueurs[id].id_tatoueur);
 
-        pthread_mutex_lock(&mutex_salle_attente_2);
+        pthread_mutex_lock(&mutex_salle_attente);
         param->sale_attente.nombre_seats_available++;
-        pthread_mutex_unlock(&mutex_salle_attente_2);
+        pthread_mutex_unlock(&mutex_salle_attente);
 
     } while (param->sale_attente.nombre_seats_available <= 0);
 
@@ -90,21 +92,13 @@ int main(int argc, const char * argv[]) {
 
     printf(ANSI_COLOR_RED "num_threads to create: %i" ANSI_COLOR_RESET "\n",number_clients+number_tatoueurs);
 
-    promenade_t maPromenade;
-    maPromenade.walk_min_t = WALK_MIN_T;
-    maPromenade.walk_max_t = WALK_MAX_T;
-
-    tattouage_t monTatoo;
-    monTatoo.tatoo_min_t = TATOO_MIN_T;
-    monTatoo.tatoo_max_t = TATOO_MAX_T;
-
     salleAttente_t listeAttente;
     listeAttente.nombre_seats_available = number_sieges_salle_attente;
     listeAttente.nombre_seats_const= number_sieges_salle_attente;
     listeAttente.client = malloc(sizeof(client_t)*number_sieges_salle_attente);
 
-    assert(randomWalk(maPromenade) <= maPromenade.walk_max_t && randomWalk(maPromenade) >= maPromenade.walk_min_t);
-    assert(randomTatoo(monTatoo) <= monTatoo.tatoo_max_t && randomTatoo(monTatoo) >= monTatoo.tatoo_min_t);
+    assert(randomWalk(WALK_MIN_T,WALK_MAX_T) <= WALK_MAX_T && randomWalk(WALK_MIN_T,WALK_MAX_T) >= WALK_MIN_T);
+    assert(randomTatoo(TATOO_MIN_T, TATOO_MAX_T) <= TATOO_MAX_T && randomTatoo(TATOO_MIN_T, TATOO_MAX_T) >= TATOO_MIN_T);
 
     tattoueur_t *all_tatoueurs = malloc(sizeof(client_t)*number_tatoueurs);
     client_t *all_clients = malloc(sizeof(client_t)*number_clients);
@@ -113,7 +107,7 @@ int main(int argc, const char * argv[]) {
         all_tatoueurs[i].id_tatoueur = i;
         printf(ANSI_COLOR_CYAN "Id tatoueur: %i" ANSI_COLOR_RESET "\n", all_tatoueurs[i].id_tatoueur);
 
-        all_tatoueurs[i].time_tatoo = randomTatoo(monTatoo);
+        all_tatoueurs[i].time_tatoo = randomTatoo(TATOO_MIN_T, WALK_MAX_T);
         printf(ANSI_COLOR_CYAN "Time tatoo: %i" ANSI_COLOR_RESET "\n", all_tatoueurs[i].time_tatoo);
     }
 
@@ -122,7 +116,7 @@ int main(int argc, const char * argv[]) {
         printf(ANSI_COLOR_MAGENTA "j client: %i" ANSI_COLOR_RESET "\n", j);
         printf(ANSI_COLOR_MAGENTA "Id client: %i" ANSI_COLOR_RESET "\n", all_clients[j].id_client);
 
-        all_clients[j].time_promenade = randomWalk(maPromenade);
+        all_clients[j].time_promenade = randomWalk(WALK_MIN_T,WALK_MAX_T);
         printf(ANSI_COLOR_MAGENTA "Time balade: %i" ANSI_COLOR_RESET "\n", all_clients[j].time_promenade);
     }
 
@@ -166,7 +160,6 @@ int main(int argc, const char * argv[]) {
     }
 
     pthread_mutex_destroy(&mutex_salle_attente);
-    pthread_mutex_destroy(&mutex_salle_attente_2);
 
     return EXIT_SUCCESS;
 }

@@ -20,25 +20,29 @@ void *client(void *params) {
     int id = param->id_thread;
 
     printf(ANSI_COLOR_RED "id thread: %i" ANSI_COLOR_RESET "\n",param->id_thread);
-    printf(ANSI_COLOR_RED "seats available: %i" ANSI_COLOR_RESET "\n",param->sale_attente.nombre_seats_available);
-    printf(ANSI_COLOR_RED "seats const: %i" ANSI_COLOR_RESET "\n",param->sale_attente.nombre_seats_const);
-    printf("id client in thread: %i\n",param->sale_attente.client[id].id_client);
-    printf("time client in thread: %i\n",param->sale_attente.client[id].time_promenade);
-    printf("id tatoueur in thread: %i\n",param->sale_attente.tattoueurs[id].id_tatoueur);
-    printf("time tatoueur in thread: %i\n",param->sale_attente.tattoueurs[id].time_tatoo);
+    printf(ANSI_COLOR_RED "seats available: %i" ANSI_COLOR_RESET "\n",param->nombre_seats_available);
+    printf(ANSI_COLOR_RED "seats const: %i" ANSI_COLOR_RESET "\n",param->nombre_seats_const);
+    printf("id client in thread: %i\n",param->client[id].id_client);
+    printf("time client in thread: %i\n",param->client[id].time_promenade);
+    printf("id tatoueur in thread: %i\n",param->tattoueurs[id].id_tatoueur);
+    printf("time tatoueur in thread: %i\n",param->tattoueurs[id].time_tatoo);
 
-    param->sale_attente.tattoueurs[id] = param->sale_attente.tattoueurs[param->sale_attente.nombre_seats_const-param->sale_attente.nombre_seats_available];
-    printf("Tatoueur id: %i\n", param->sale_attente.tattoueurs[id]);
+    printf("nombre de tatoos: %i\n", param->nombre_tatoos);
+
+    //param->tattoueurs[id] = param->sale_attente.tattoueurs[param->sale_attente.nombre_seats_const-param->sale_attente.nombre_seats_available];
+    printf("Tatoueur id: %i\n", param->tattoueurs[id]);
 
     struct timespec ts;
-    ts.tv_sec = param->sale_attente.client[id].time_promenade / 100;
+    ts.tv_sec = param->client[id].time_promenade / 100;
     ts.tv_nsec = 0;
 
     struct timespec ts2;
-    ts.tv_sec = param->sale_attente.tattoueurs[id].time_tatoo / 10;
-    ts.tv_nsec = 0;
+    ts2.tv_sec = param->tattoueurs[id].time_tatoo / 10;
+    ts2.tv_nsec = 0;
 
-    printf("C'est partit pour une balade pour le client %i\n", param->sale_attente.client[id].id_client);
+    printf("C'est partit pour une balade pour le client %i\n", param->client[id].id_client);
+
+    // Boucle nombre tattoo
 
     if (nanosleep(&ts, NULL) != 0){
         fprintf(stderr, "Nanosleep error");
@@ -47,12 +51,12 @@ void *client(void *params) {
 
     do {
         pthread_mutex_lock(&mutex_salle_attente);
-        param->sale_attente.nombre_seats_available--;
+        param->nombre_seats_available--;
         pthread_mutex_unlock(&mutex_salle_attente);
 
-        if (param->sale_attente.nombre_seats_available > 0){
+        if (param->nombre_seats_available > 0){
             // On laisse le temps au tattoueur de tatouer
-            printf("Le client %i se fait hagar par le tatoueur %i\n", param->sale_attente.client[id].id_client, param->sale_attente.tattoueurs[id].id_tatoueur);
+            printf("Le client %i se fait hagar par le tatoueur %i\n", param->client[id].id_client, param->tattoueurs[id].id_tatoueur);
 
             if (nanosleep(&ts2, NULL) != 0){
                 fprintf(stderr, "Nanosleep error");
@@ -60,17 +64,36 @@ void *client(void *params) {
             }
         }
         else
-            printf("Le client %i ne se fait pas hagar par le tatoueur %i\n", param->sale_attente.client[id].id_client, param->sale_attente.tattoueurs[id].id_tatoueur);
+            printf("Le client %i ne se fait pas hagar par le tatoueur %i\n", param->client[id].id_client, param->tattoueurs[id].id_tatoueur);
 
-        printf("Le client %i a finit de se faire hagar par le tatoueur %i\n", param->sale_attente.client[id].id_client, param->sale_attente.tattoueurs[id].id_tatoueur);
+        printf("Le client %i a finit de se faire hagar par le tatoueur %i\n", param->client[id].id_client, param->tattoueurs[id].id_tatoueur);
 
         pthread_mutex_lock(&mutex_salle_attente);
-        param->sale_attente.nombre_seats_available++;
+        param->nombre_seats_available++;
         pthread_mutex_unlock(&mutex_salle_attente);
 
-    } while (param->sale_attente.nombre_seats_available <= 0);
+    } while (param->nombre_seats_available <= 0);
 
     return EXIT_SUCCESS;
+}
+
+
+void nombre_tatoos (void *params){
+    param_t *param = (param_t*) params;
+
+    int id = param->id_thread;
+
+    printf("nombre de tatoos: %i\n", param->nombre_tatoos);
+
+    while (param->nombre_tatoos != 0){
+
+
+
+        pthread_mutex_lock(&mutex_salle_attente);
+        param->nombre_tatoos--;
+        pthread_mutex_unlock(&mutex_salle_attente);
+    }
+
 }
 
 int main(int argc, const char * argv[]) {
@@ -125,22 +148,28 @@ int main(int argc, const char * argv[]) {
 
 
     pthread_t threads_clients[number_clients];
-    param_t params;
+    //param_t params;
+    param_t params_nombre_tatoos;
 
     for (int k = 0; k < number_clients; ++k) {
-        params.sale_attente.client = listeAttente.client;
+        params_nombre_tatoos.client[k].id_client = k;
+        params_nombre_tatoos.client[k].time_promenade = randomWalk(WALK_MIN_T,WALK_MAX_T);
     }
     for (int l = 0; l < number_tatoueurs; ++l) {
-        params.sale_attente.tattoueurs = listeAttente.tattoueurs;
+        params_nombre_tatoos.tattoueurs[l].id_tatoueur = l;
+        params_nombre_tatoos.tattoueurs[l].time_tatoo = randomTatoo(TATOO_MIN_T,TATOO_MAX_T);
     }
+
+    nombre_tatoos(&params_nombre_tatoos);
 
 
     for (int i = 0; i < number_clients; ++i) {
-        params.id_thread = i;
-        params.sale_attente.nombre_seats_available = listeAttente.nombre_seats_available;
-        params.sale_attente.nombre_seats_const = listeAttente.nombre_seats_const;
+        params_nombre_tatoos.id_thread = i;
+        params_nombre_tatoos.nombre_tatoos = number_tattoos;
+        params_nombre_tatoos.nombre_seats_available = listeAttente.nombre_seats_available;
+        params_nombre_tatoos.nombre_seats_const = listeAttente.nombre_seats_const;
 
-        int code = pthread_create(&threads_clients[i], NULL, client, &params);
+        int code = pthread_create(&threads_clients[i], NULL, client, &params_nombre_tatoos);
 
         assert(code == 0);
 

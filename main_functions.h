@@ -61,7 +61,11 @@ typedef struct salleAttenteT{
 
 typedef struct paramT {
     int id_thread;
-    salleAttente_t sale_attente;
+    int nombre_tatoos;
+    int nombre_seats_available;
+    int nombre_seats_const;
+    client_t *client;
+    tattoueur_t *tattoueurs;
 }param_t;
 
 pthread_mutex_t mutex_salle_attente;

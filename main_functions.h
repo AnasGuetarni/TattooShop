@@ -26,16 +26,6 @@
 #define ANSI_COLOR_CYAN    "\x1b[36m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
 
-typedef struct promenadeT {
-    int walk_min_t;
-    int walk_max_t;
-} promenade_t;
-
-typedef struct tattouageT {
-    int tatoo_min_t;
-    int tatoo_max_t;
-} tattouage_t;
-
 typedef struct tatoueurT {
     int id_tatoueur;
     int time_tatoo;
@@ -52,13 +42,6 @@ typedef struct {
     pthread_mutex_t *block;
 } barrier_t;
 
-typedef struct salleAttenteT{
-    int nombre_seats_available;
-    int nombre_seats_const;
-    client_t *client;
-    tattoueur_t *tattoueurs;
-}salleAttente_t;
-
 typedef struct paramT {
     int id_thread;
     int nombre_tatoos;
@@ -68,8 +51,13 @@ typedef struct paramT {
     tattoueur_t *tattoueurs;
 }param_t;
 
-pthread_mutex_t mutex_salle_attente;
-sem_t semaphore_balade;
+pthread_mutex_t mut_start_tattoo;
+pthread_mutex_t mut_tattoo_eff;
+sem_t sem_porte;
+sem_t sem_seats;
+sem_t sem_fauteuils;
+sem_t sem_start_tattoo;
+sem_t sem_end_tattoo;
 barrier_t barrier;
 
 int randomWalk(int a, int b);
@@ -77,5 +65,9 @@ int randomTatoo(int a, int b);
 void barrier_init(barrier_t *b, int count);
 void barrier_wait(barrier_t *b);
 void barrier_destroy(barrier_t *b);
+
+void *salle_attente(void *params);
+void *promenade(void *params);
+void *tattouages (void *params);
 
 #endif TATTOOSHOP_MAIN_FUNCTIONS

@@ -29,7 +29,7 @@ typedef struct clientT {
 }client_t;
 
 typedef struct paramT {
-    int id_thread;
+    int *id_thread;
     int nombre_tatoos;
     int nombre_siege_disponible;
 }param_t;

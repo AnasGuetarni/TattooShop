@@ -19,8 +19,9 @@ int nombre_tattoo_eff = 0;
 
 void *promenade(void *params){
     param_t *param = (param_t*) params;
+    int id = *((int *) param->id_thread);
 
-    printf("Le thread %i rentre en promenade\n", param->id_thread);
+    printf("Le thread %i rentre en promenade\n", id);
 
   	struct timespec ts;
   	ts.tv_sec = randomWalk(WALK_MIN_T, WALK_MAX_T) / 10;
@@ -28,8 +29,8 @@ void *promenade(void *params){
 
   	assert(nanosleep(&ts, NULL) == 0);
 
-    printf("Le thread %i a finit sa promenade\n", param->id_thread);
-    printf("Le thread %i va rentrer alors en salle d'attente\n", param->id_thread);
+    printf("Le thread %i a finit sa promenade\n", id);
+    printf("Le thread %i va rentrer alors en salle d'attente\n", id);
 
   	salle_attente(param);
 
@@ -38,8 +39,9 @@ void *promenade(void *params){
 
 void *salle_attente(void *params) {
     param_t *param = (param_t*) params;
+    int id = *((int *) param->id_thread);
 
-    printf("Le thread %i rentre en salle d'attente\n", param->id_thread);
+    printf("Le thread %i rentre en salle d'attente\n", id);
 
 	pthread_mutex_lock(&promenadance);
   printf("On enleve un siege disponible\n");
@@ -47,7 +49,7 @@ void *salle_attente(void *params) {
 
 	if (param->nombre_siege_disponible < 0)
     {
-      printf("Et c'est partit pour une promenade sur le thread : %i car aucun siège n'est disponible\n", param->id_thread);
+      printf("Et c'est partit pour une promenade sur le thread : %i car aucun siège n'est disponible\n", id);
 		  pthread_mutex_unlock(&promenadance);
 		  promenade(param);
 	}
@@ -73,6 +75,7 @@ void *salle_attente(void *params) {
 
 void *tattoueur (void *params){
     param_t *param = (param_t*) params;
+    int id = *((int *) param->id_thread);
 
     printf("Le tattoueur rentre dans son entre\n");
 
@@ -82,7 +85,7 @@ void *tattoueur (void *params){
         sem_wait(&sem_start_tattoo); // Referme pour le prochain thread
         pthread_mutex_unlock(&tattoueur_reveil);
 
-        printf("Le tatouage va commencer pour le thread %i\n", param->id_thread);
+        printf("Le tatouage va commencer pour le thread %i\n", id);
 
         struct timespec ts;
         ts.tv_sec = randomTatoo(TATOO_MIN_T, TATOO_MAX_T) / 10;
@@ -120,6 +123,7 @@ int main(int argc, char *argv[]) {
     int number_clients = atoi(argv[2]);
     int number_tatoueurs = atoi(argv[3]);
     int number_sieges_salle_attente = atoi(argv[4]);
+    int number_threads = number_clients+number_tatoueurs;
 
     sem_init(&sem_porte,0,1);
     sem_init(&sem_seats,0,number_sieges_salle_attente);
@@ -140,15 +144,16 @@ int main(int argc, char *argv[]) {
     assert(randomTatoo(TATOO_MIN_T, TATOO_MAX_T) <= TATOO_MAX_T && randomTatoo(TATOO_MIN_T, TATOO_MAX_T) >= TATOO_MIN_T);
 
     pthread_t threads_clients[number_clients];
-    pthread_t threads_tattoo[number_clients];
+    pthread_t threads_tattoo[number_tatoueurs];
 
     param_t params;
     params.nombre_tatoos = number_tattoos;
     params.nombre_siege_disponible = number_sieges_salle_attente;
+    params.id_thread = malloc(sizeof(int)*number_threads);
 
-    for (int i = 0; i < number_clients; ++i)
+    for (int i = 0; i < number_clients; i++)
     {
-        params.id_thread = i;
+        params.id_thread[i] = i;
         int code = pthread_create(&threads_clients[i], NULL, promenade, &params);
         assert(code == 0);
 
@@ -156,8 +161,9 @@ int main(int argc, char *argv[]) {
         assert(codeJoin == 0);
     }
 
-    for (int i = 0; i < number_tatoueurs; ++i)
+    for (int i = 0; i < number_tatoueurs; i++)
     {
+        params.id_thread[i] = i;
         int code = pthread_create(&threads_tattoo[i], NULL, tattoueur, &params);
         assert(code == 0);
 

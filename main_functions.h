@@ -32,16 +32,17 @@ typedef struct paramT {
     int *id_thread;
     int nombre_tatoos;
     int nombre_siege_disponible;
+    int nombre_siege_total;
 }param_t;
 
 pthread_mutex_t promenadance;
 pthread_mutex_t tattoueur_reveil;
 pthread_mutex_t mut_tattoo_eff;
-pthread_mutex_t porte;
 
 sem_t sem_fauteuils;
 sem_t sem_start_tattoo;
 sem_t sem_end_tattoo;
+sem_t porte;
 
 int randomWalk(int a, int b);
 int randomTatoo(int a, int b);

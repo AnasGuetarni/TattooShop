@@ -41,13 +41,13 @@ void *salle_attente(void *params) {
     param_t *param = (param_t*) params;
     int id = *((int *) param->id_thread);
 
-    printf("Le thread %i rentre en salle d'attente\n", id);
+    printf("Le thread %d rentre en salle d'attente\n", id);
 
+	printf("On enleve un siege disponible\n");
 	pthread_mutex_lock(&promenadance);
-  printf("On enleve un siege disponible\n");
 	param->nombre_siege_disponible--;
-  pthread_mutex_unlock(&promenadance);
-  printf("mutex promenadance unlock\n");
+	pthread_mutex_unlock(&promenadance);
+	printf("mutex promenadance unlock\n");
 
 	if (param->nombre_siege_disponible < 0)
     {
@@ -56,17 +56,16 @@ void *salle_attente(void *params) {
 	}
 
     printf("On rentre dans la porte d'entree\n");
-    printf("semaphore porte wait\n");
-    sem_wait(&sem_porte);
-    printf("semaphore seats wait\n");
-    sem_wait(&sem_seats);
-    printf("semaphore porte post\n");
-    sem_post(&sem_porte);
-
+    printf("mutex porte lock\n");
+    pthread_mutex_lock(&tattoueur_reveil);
+    
     printf("semaphore fauteuils wait\n");
     sem_wait(&sem_fauteuils); // Regarde si un tatoueur est disponible
-    printf("semaphore seats post\n");
-    sem_post(&sem_seats); // Libère le siège qu'il occupait
+    
+    printf("mutex porte unlock\n");
+    pthread_mutex_unlock(&tattoueur_reveil);
+
+	/* Le Thread peut commencer a se faire tatouer */
 
     printf("semaphore start tatoo post\n");
     sem_post(&sem_start_tattoo);  // Lance un tatoueur
@@ -77,7 +76,7 @@ void *salle_attente(void *params) {
     printf("semaphore fauteuils post\n");
     sem_post(&sem_fauteuils);  // libère le fauteuil ou il s'est fait tattouer
 
-    printf("Et c'est partit pour une promenade sur le thread : %i car il a fait ce qu'il avait a faire\n", id);
+    printf("Et c'est partit pour une promenade sur le thread : %d car il a fait ce qu'il avait a faire\n", id);
     promenade(param); // Retourne se promener
 
     return EXIT_SUCCESS;
@@ -85,7 +84,7 @@ void *salle_attente(void *params) {
 
 void *tattoueur (void *params){
     param_t *param = (param_t*) params;
-    int *id = (int *) param->id_thread);
+    int *id = (int *) param->id_thread;
 
     printf("Le tattoueur rentre dans son entre\n");
 
@@ -95,7 +94,7 @@ void *tattoueur (void *params){
         sem_wait(&sem_start_tattoo); // Referme pour le prochain thread
         pthread_mutex_unlock(&tattoueur_reveil);
 
-        printf("Le tatouage va commencer pour le thread %i\n", id);
+        printf("Le tatouage va commencer pour le thread %d\n", *id);
 
         struct timespec ts;
         ts.tv_sec = randomTatoo(TATOO_MIN_T, TATOO_MAX_T) / 10;
@@ -135,8 +134,6 @@ int main(int argc, char *argv[]) {
     int number_sieges_salle_attente = atoi(argv[4]);
     int number_threads = number_clients+number_tatoueurs;
 
-    sem_init(&sem_porte,0,1);
-    sem_init(&sem_seats,0,number_sieges_salle_attente);
     sem_init(&sem_fauteuils,0,number_tatoueurs);
     sem_init(&sem_start_tattoo,0,0);
     sem_init(&sem_end_tattoo,0,0);
@@ -144,6 +141,7 @@ int main(int argc, char *argv[]) {
     pthread_mutex_init(&promenadance,NULL);
     pthread_mutex_init(&tattoueur_reveil,NULL);
     pthread_mutex_init(&mut_tattoo_eff,NULL);
+    pthread_mutex_init(&porte,NULL);
 
     printf(ANSI_COLOR_GREEN "Number of tattoos: %i" ANSI_COLOR_RESET "\n", number_tattoos);
     printf(ANSI_COLOR_GREEN "Number of clients: %i" ANSI_COLOR_RESET "\n", number_clients);
@@ -159,7 +157,13 @@ int main(int argc, char *argv[]) {
     param_t params;
     params.nombre_tatoos = number_tattoos;
     params.nombre_siege_disponible = number_sieges_salle_attente;
+    
     params.id_thread = malloc(sizeof(int)*number_threads);
+    if (params.id_thread == NULL)
+    {
+		fprintf(stderr, "malloc\n");
+		return EXIT_FAILURE;
+	}
 
     for (int i = 0; i < number_clients; i++)
     {
@@ -185,8 +189,7 @@ int main(int argc, char *argv[]) {
       assert(codeJoin == 0);
     }
 
-    sem_destroy(&sem_porte);
-    sem_destroy(&sem_seats);
+
     sem_destroy(&sem_fauteuils);
     sem_destroy(&sem_start_tattoo);
     sem_destroy(&sem_end_tattoo);
@@ -194,6 +197,9 @@ int main(int argc, char *argv[]) {
     pthread_mutex_destroy(&promenadance);
     pthread_mutex_destroy(&tattoueur_reveil);
     pthread_mutex_destroy(&mut_tattoo_eff);
+    pthread_mutex_destroy(&porte);
+    
+    free(params.id_thread);
 
-    return 0;
+    return EXIT_SUCCESS;
 }

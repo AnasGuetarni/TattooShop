@@ -37,8 +37,8 @@ typedef struct paramT {
 pthread_mutex_t promenadance;
 pthread_mutex_t tattoueur_reveil;
 pthread_mutex_t mut_tattoo_eff;
-sem_t sem_porte;
-sem_t sem_seats;
+pthread_mutex_t porte;
+
 sem_t sem_fauteuils;
 sem_t sem_start_tattoo;
 sem_t sem_end_tattoo;

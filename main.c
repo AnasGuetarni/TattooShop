@@ -46,28 +46,38 @@ void *salle_attente(void *params) {
 	pthread_mutex_lock(&promenadance);
   printf("On enleve un siege disponible\n");
 	param->nombre_siege_disponible--;
+  pthread_mutex_unlock(&promenadance);
+  printf("mutex promenadance unlock\n");
 
 	if (param->nombre_siege_disponible < 0)
     {
       printf("Et c'est partit pour une promenade sur le thread : %i car aucun siège n'est disponible\n", id);
-		  pthread_mutex_unlock(&promenadance);
 		  promenade(param);
 	}
 
-    /* Porte d'entrée */
+    printf("On rentre dans la porte d'entree\n");
+    printf("semaphore porte wait\n");
     sem_wait(&sem_porte);
+    printf("semaphore seats wait\n");
     sem_wait(&sem_seats);
+    printf("semaphore porte post\n");
     sem_post(&sem_porte);
 
+    printf("semaphore fauteuils wait\n");
     sem_wait(&sem_fauteuils); // Regarde si un tatoueur est disponible
+    printf("semaphore seats post\n");
     sem_post(&sem_seats); // Libère le siège qu'il occupait
 
+    printf("semaphore start tatoo post\n");
     sem_post(&sem_start_tattoo);  // Lance un tatoueur
 
+    printf("semaphore end tattoo wait\n");
     sem_wait(&sem_end_tattoo); // attend la fin de son tattoo
 
+    printf("semaphore fauteuils post\n");
     sem_post(&sem_fauteuils);  // libère le fauteuil ou il s'est fait tattouer
 
+    printf("Et c'est partit pour une promenade sur le thread : %i car il a fait ce qu'il avait a faire\n", id);
     promenade(param); // Retourne se promener
 
     return EXIT_SUCCESS;
@@ -75,7 +85,7 @@ void *salle_attente(void *params) {
 
 void *tattoueur (void *params){
     param_t *param = (param_t*) params;
-    int id = *((int *) param->id_thread);
+    int *id = (int *) param->id_thread);
 
     printf("Le tattoueur rentre dans son entre\n");
 
@@ -156,9 +166,6 @@ int main(int argc, char *argv[]) {
         params.id_thread[i] = i;
         int code = pthread_create(&threads_clients[i], NULL, promenade, &params);
         assert(code == 0);
-
-        int codeJoin = pthread_join(threads_clients[i], NULL) != 0;
-        assert(codeJoin == 0);
     }
 
     for (int i = 0; i < number_tatoueurs; i++)
@@ -166,9 +173,16 @@ int main(int argc, char *argv[]) {
         params.id_thread[i] = i;
         int code = pthread_create(&threads_tattoo[i], NULL, tattoueur, &params);
         assert(code == 0);
+    }
 
-        int codeJoin = pthread_join(threads_tattoo[i], NULL) != 0;
-        assert(codeJoin == 0);
+    for (int k = 0; k < number_clients; k++){
+      int codeJoin = pthread_join(threads_clients[k], NULL) != 0;
+      assert(codeJoin == 0);
+    }
+
+    for (int l = 0; l < number_tatoueurs; l++){
+      int codeJoin = pthread_join(threads_tattoo[l], NULL) != 0;
+      assert(codeJoin == 0);
     }
 
     sem_destroy(&sem_porte);

@@ -5,14 +5,6 @@
 #ifndef TATTOOSHOP_MAIN_FUNCTIONS
 #define TATTOOSHOP_MAIN_FUNCTIONS
 
-#include <semaphore.h>
-#include <sched.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <time.h>
-#include <errno.h>
-
 #define WALK_MIN_T 30
 #define WALK_MAX_T 50
 #define TATOO_MIN_T 2
@@ -36,38 +28,25 @@ typedef struct clientT {
     int time_promenade;
 }client_t;
 
-typedef struct {
-    int count;
-    pthread_mutex_t *mutex;
-    pthread_mutex_t *block;
-} barrier_t;
-
 typedef struct paramT {
-    int id_thread;
     int nombre_tatoos;
-    int nombre_seats_available;
-    int nombre_seats_const;
-    client_t *client;
-    tattoueur_t *tattoueurs;
+    int nombre_siege_disponible;
 }param_t;
 
-pthread_mutex_t mut_start_tattoo;
+pthread_mutex_t promenade;
+pthread_mutex_t tattoueur_reveil;
 pthread_mutex_t mut_tattoo_eff;
 sem_t sem_porte;
 sem_t sem_seats;
 sem_t sem_fauteuils;
 sem_t sem_start_tattoo;
 sem_t sem_end_tattoo;
-barrier_t barrier;
 
 int randomWalk(int a, int b);
 int randomTatoo(int a, int b);
-void barrier_init(barrier_t *b, int count);
-void barrier_wait(barrier_t *b);
-void barrier_destroy(barrier_t *b);
 
 void *salle_attente(void *params);
 void *promenade(void *params);
-void *tattouages (void *params);
+void *tattoueur (void *params);
 
-#endif TATTOOSHOP_MAIN_FUNCTIONS
+#endif

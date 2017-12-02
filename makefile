@@ -1,5 +1,5 @@
-CC=gcc -Wall -Wextra -Werror -std=gnu11 -D_GNU_SOURCE -O3 -g
-LIBS= -lpthread -lm -lrt
+CC=gcc -Wall -Wextra -std=gnu11 -D_GNU_SOURCE -O3 -g
+LIBS= -lpthread -lm 
 SRCS=$(wildcard *.c)
 OBJS=$(SRCS:.c=.o)
 BINS=$(SRCS:%.c=%)

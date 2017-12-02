@@ -12,6 +12,7 @@
 #include <assert.h>
 #include <semaphore.h>
 #include <time.h>
+#include <zconf.h>
 #include "main_functions.h"
 #include "thread_wrapper.h"
 
@@ -22,12 +23,19 @@ void *promenade(void *params){
     int id = *((int *) param->id_thread);
 
     printf("Le thread %i rentre en promenade\n", id);
-
+/*
   	struct timespec ts;
   	ts.tv_sec = randomWalk(WALK_MIN_T, WALK_MAX_T) / 10;
   	ts.tv_nsec = 0;
 
   	assert(nanosleep(&ts, NULL) == 0);
+*/
+    struct timespec sleep_time = {
+            .tv_sec = randomWalk(WALK_MIN_T, WALK_MAX_T) / 10, .tv_nsec = 0
+    };
+
+    assert(nanosleep(&sleep_time,&sleep_time) == 0);
+
 
     printf("Le thread %i a finit sa promenade\n", id);
     printf("Le thread %i va rentrer alors en salle d'attente\n", id);
@@ -105,12 +113,20 @@ void *tattoueur (void *params){
         pthread_mutex_unlock(&tattoueur_reveil);
 
         printf("Le tatouage va commencer pour le thread %d\n", *id);
-
+/*
         struct timespec ts;
         ts.tv_sec = randomTatoo(TATOO_MIN_T, TATOO_MAX_T) / 10;
         ts.tv_nsec = 0;
 
         assert(nanosleep(&ts, NULL) != 0);
+*/
+
+        struct timespec sleep_time = {
+                .tv_sec = randomWalk(WALK_MIN_T, WALK_MAX_T) / 10, .tv_nsec = 0
+        };
+
+        assert(nanosleep(&sleep_time,&sleep_time) == 0);
+
 
         pthread_mutex_lock(&mut_tattoo_eff);
         nombre_tattoo_eff++;

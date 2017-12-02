@@ -25,14 +25,14 @@ typedef struct tatoueurT {
 
 typedef struct clientT {
     int id_client;
-    int time_promenade;
 }client_t;
 
 typedef struct paramT {
-    int *id_thread;
+    int id_thread;
     int nombre_tatoos;
     int nombre_siege_disponible;
     int nombre_siege_total;
+    client_t *all_clients;
 }param_t;
 
 pthread_mutex_t promenadance;

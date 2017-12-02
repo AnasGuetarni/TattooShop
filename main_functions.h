@@ -29,11 +29,12 @@ typedef struct clientT {
 }client_t;
 
 typedef struct paramT {
+    int id_thread;
     int nombre_tatoos;
     int nombre_siege_disponible;
 }param_t;
 
-pthread_mutex_t promenade;
+pthread_mutex_t promenadance;
 pthread_mutex_t tattoueur_reveil;
 pthread_mutex_t mut_tattoo_eff;
 sem_t sem_porte;

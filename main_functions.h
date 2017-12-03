@@ -5,8 +5,8 @@
 #ifndef TATTOOSHOP_MAIN_FUNCTIONS
 #define TATTOOSHOP_MAIN_FUNCTIONS
 
-#define WALK_MIN_T 30
-#define WALK_MAX_T 50
+#define WALK_MIN_T 5
+#define WALK_MAX_T 10
 #define TATOO_MIN_T 2
 #define TATOO_MAX_T 10
 

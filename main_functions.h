@@ -35,6 +35,7 @@ typedef struct paramT {
 }param_t;
 
 pthread_mutex_t promenadance;
+pthread_mutex_t promenadance_end;
 pthread_mutex_t tattoueur_reveil;
 pthread_mutex_t mut_tattoo_eff;
 

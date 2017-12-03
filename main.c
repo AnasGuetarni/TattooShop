@@ -25,8 +25,8 @@ void *promenade(void *params){
 
     printf(ANSI_COLOR_MAGENTA"Le thread  rentre en promenade\n"ANSI_COLOR_RESET);
 
-    //sleep_time.tv_sec = randomWalk(WALK_MIN_T, WALK_MAX_T);
-    sleep_time.tv_sec = 5;
+    sleep_time.tv_sec = randomWalk(WALK_MIN_T, WALK_MAX_T);
+    //sleep_time.tv_sec = 5;
     sleep_time.tv_nsec = 0;
 
     printf(ANSI_COLOR_GREEN".tvsec promenade: %i\n"ANSI_COLOR_RESET,(int) sleep_time.tv_sec);
@@ -58,10 +58,10 @@ void *salle_attente(void *params) {
     sem_post(&porte);
 
 	/* On libère le siège  */
-	pthread_mutex_lock(&promenadance);
+	pthread_mutex_lock(&promenadance_end);
 	nombre_siege_disponible++;
 	printf(ANSI_COLOR_RED "On ajoute un siege disponible: %i\n"ANSI_COLOR_RESET, nombre_siege_disponible);
-	pthread_mutex_unlock(&promenadance);
+	pthread_mutex_unlock(&promenadance_end);
 
 	/* Le Thread peut commencer a se faire tatouer */
     sem_post(&sem_start_tattoo);  // Lance un tatoueur
@@ -91,8 +91,8 @@ void *tattoueur (void *params){
         
 	printf("Le tatouage va commencer pour le thread \n");
 
-	//sleep_time_tattoo.tv_sec = randomTatoo(TATOO_MIN_T, TATOO_MAX_T);
-	sleep_time_tattoo.tv_sec = 2;
+	sleep_time_tattoo.tv_sec = randomTatoo(TATOO_MIN_T, TATOO_MAX_T);
+	//sleep_time_tattoo.tv_sec = 2;
 	sleep_time_tattoo.tv_nsec = 0;
 
 	printf(ANSI_COLOR_GREEN".tvsec tattoo: %i\n"ANSI_COLOR_RESET,(int) sleep_time_tattoo.tv_sec);
@@ -137,6 +137,7 @@ int main(int argc, char *argv[]) {
     sem_init(&porte,0,1);
 
     pthread_mutex_init(&promenadance,NULL);
+    pthread_mutex_init(&promenadance_end,NULL);
     pthread_mutex_init(&tattoueur_reveil,NULL);
     pthread_mutex_init(&mut_tattoo_eff,NULL);
 
@@ -186,6 +187,7 @@ int main(int argc, char *argv[]) {
     sem_destroy(&porte);
 
     pthread_mutex_destroy(&promenadance);
+    pthread_mutex_destroy(&promenadance_end);
     pthread_mutex_destroy(&tattoueur_reveil);
     pthread_mutex_destroy(&mut_tattoo_eff);
 

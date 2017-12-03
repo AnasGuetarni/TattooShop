@@ -20,7 +20,6 @@
 
 typedef struct tatoueurT {
     int id_tatoueur;
-    int time_tatoo;
 }tattoueur_t;
 
 typedef struct clientT {

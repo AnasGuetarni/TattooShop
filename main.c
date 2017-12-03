@@ -58,13 +58,10 @@ void *salle_attente(void *params) {
     sem_wait(&sem_fauteuils); // Regarde si un tatoueur est disponible
     sem_post(&porte);
 
-	/* On vérifie que l'on ne dépasse pas le nombre de siège total disponible */
-	if (param->nombre_siege_disponible <= param->nombre_siege_total)
-	{
-		pthread_mutex_lock(&promenadance);
-		param->nombre_siege_disponible++;
-		pthread_mutex_unlock(&promenadance);
-	}
+	/* On libère le siège  */
+	pthread_mutex_lock(&promenadance);
+	param->nombre_siege_disponible++;
+	pthread_mutex_unlock(&promenadance);
 
 	/* Le Thread peut commencer a se faire tatouer */
     sem_post(&sem_start_tattoo);  // Lance un tatoueur
@@ -76,48 +73,51 @@ void *salle_attente(void *params) {
     return EXIT_SUCCESS;
 }
 
+void *attente_tatoueur(void *params)
+{
+
+	pthread_mutex_lock(&tattoueur_reveil);
+	sem_wait(&sem_start_tattoo); // Attend un client
+	sem_wait(&sem_start_tattoo); // Referme pour le prochain thread
+	pthread_mutex_unlock(&tattoueur_reveil);
+	
+	tattoueur(params);
+	
+	return EXIT_SUCCESS;
+}
+
 void *tattoueur (void *params){
     param_t *param = (param_t*) params;
     int id = param->id_thread_tattoueurs;
-    int number_tour_boucle =0;
+        
+	printf("Le tatouage va commencer pour le thread %d\n", id);
 
-    do{
-        number_tour_boucle++;
-        printf("Nombre tour boucle: %i \n", number_tour_boucle);
-        pthread_mutex_lock(&tattoueur_reveil);
-        sem_wait(&sem_start_tattoo); // Attend un client
-        sem_wait(&sem_start_tattoo); // Referme pour le prochain thread
-        pthread_mutex_unlock(&tattoueur_reveil);
+	//sleep_time_tattoo.tv_sec = randomTatoo(TATOO_MIN_T, TATOO_MAX_T);
+	sleep_time_tattoo.tv_sec = 2;
+	sleep_time_tattoo.tv_nsec = 0;
 
-        printf("Le tatouage va commencer pour le thread %d\n", id);
+	printf(ANSI_COLOR_GREEN".tvsec tattoo: %i\n"ANSI_COLOR_RESET,(int) sleep_time_tattoo.tv_sec);
 
-        //sleep_time_tattoo.tv_sec = randomTatoo(TATOO_MIN_T, TATOO_MAX_T);
-        sleep_time_tattoo.tv_sec = 2;
-        sleep_time_tattoo.tv_nsec = 0;
+	assert(nanosleep(&sleep_time_tattoo,&sleep_time_tattoo) == 0);
 
-        printf(ANSI_COLOR_GREEN".tvsec tattoo: %i\n"ANSI_COLOR_RESET,(int) sleep_time_tattoo.tv_sec);
+	pthread_mutex_lock(&mut_tattoo_eff);
+	nombre_tattoo_eff++;
+	printf(ANSI_COLOR_YELLOW "Nombre de tattoo effectifs: %i\n" ANSI_COLOR_RESET, nombre_tattoo_eff);
+	pthread_mutex_unlock(&mut_tattoo_eff);
 
-        assert(nanosleep(&sleep_time_tattoo,&sleep_time_tattoo) == 0);
-
-
-        pthread_mutex_lock(&mut_tattoo_eff);
-        nombre_tattoo_eff++;
-        printf(ANSI_COLOR_YELLOW "Nombre de tattoo effectifs: %i\n" ANSI_COLOR_RESET, nombre_tattoo_eff);
-        pthread_mutex_unlock(&mut_tattoo_eff);
-
-        if (param->nombre_tatoos == nombre_tattoo_eff){
-            printf(ANSI_COLOR_CYAN "Tous les tattouages ont été réalisés\n" ANSI_COLOR_RESET);
-            exit(0);
-        }
-
-        sem_post(&sem_end_tattoo); // On a finit le tattoo
-
-        promenade(param);
-
-    } while (param->nombre_tatoos != nombre_tattoo_eff);
-
+	sem_post(&sem_end_tattoo); // On a finit le tattoo
+	
+	if (param->nombre_tatoos != nombre_tattoo_eff)
+	{
+		attente_tatoueur(params);
+	}
+	else
+	{
+		printf(ANSI_COLOR_CYAN "Tous les tattouages ont été réalisés\n" ANSI_COLOR_RESET);
+		exit(0);
+	}
+	
     return EXIT_SUCCESS;
-
 }
 
 int main(int argc, char *argv[]) {
@@ -175,7 +175,7 @@ int main(int argc, char *argv[]) {
       params_client[i].nombre_siege_total = number_sieges_salle_attente;
       params_client[i].id_thread_client = 0;
 
-      int code = pthread_create(&threads_tattoo[i], NULL, tattoueur, &params_client[i]);
+      int code = pthread_create(&threads_tattoo[i], NULL, attente_tatoueur, &params_client[i]);
       assert(code == 0);
     }
 

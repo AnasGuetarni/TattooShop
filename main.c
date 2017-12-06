@@ -22,10 +22,9 @@ struct timespec sleep_time_tattoo;
 struct timespec sleep_time;
 
 void *promenade(void *id_thread){
-    int id = *((int*) id_thread);
+    //int id = *((int*) id_thread);
 
-
-    printf(ANSI_COLOR_MAGENTA"Le thread %i rentre en promenade\n"ANSI_COLOR_RESET, id);
+    printf(ANSI_COLOR_MAGENTA"Le thread %i rentre en promenade\n"ANSI_COLOR_RESET, *((int*)id_thread));
 
     sleep_time.tv_sec = randomWalk(WALK_MIN_T, WALK_MAX_T);
     //sleep_time.tv_sec = 5;
@@ -35,16 +34,16 @@ void *promenade(void *id_thread){
 
     assert(nanosleep(&sleep_time,&sleep_time) == 0);
 
-  	salle_attente(id);
+  	salle_attente((int*)id_thread);
 
     return EXIT_SUCCESS;
 }
 
-void salle_attente(int id_thread) {
+void salle_attente(int *id_thread) {
 
     if (nombre_siege_disponible <= 0)
     {
-        printf("Aucun siège disponible donc le thread %i part en vadrouille\n", id_thread);
+        printf("Aucun siège disponible donc le thread %i part en vadrouille\n", *id_thread);
         promenade((void*)id_thread);
     }
 
@@ -151,6 +150,7 @@ int main(int argc, char *argv[]) {
     param_t_tattoo params_tattoueurs[number_tatoueurs];
 
 	nombre_tattoo_eff = 0;
+    nombre_siege_disponible = number_sieges_salle_attente;
 	   
 	for (int i = 0; i < number_clients; i++)
 	{

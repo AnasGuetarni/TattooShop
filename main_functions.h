@@ -27,10 +27,9 @@ typedef struct clientT {
 }client_t;
 
 typedef struct paramT {
-    int id_thread_client;
-    int id_thread_tattoueurs;
+    int *id_thread_client;
+    int *id_thread_tattoueurs;
     int nombre_tatoos;
-    int nombre_siege_disponible;
 }param_t;
 
 pthread_mutex_t promenadance;
@@ -46,8 +45,8 @@ sem_t porte;
 int randomWalk(int a, int b);
 int randomTatoo(int a, int b);
 
-void *salle_attente(void *params);
+void salle_attente(param_t *params);
 void *promenade(void *params);
-void *tattoueur (void *params);
+void tattoueur (param_t *params);
 
 #endif

@@ -27,8 +27,8 @@ typedef struct clientT {
 }client_t;
 
 typedef struct paramT {
-    int *id_thread_client;
-    int *id_thread_tattoueurs;
+    int id_thread_client;
+    int id_thread_tattoueurs;
     int nombre_tatoos;
 }param_t;
 

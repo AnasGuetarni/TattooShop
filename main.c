@@ -21,7 +21,7 @@ int nombre_tattoo_eff;
 struct timespec sleep_time_tattoo;
 struct timespec sleep_time;
 
-void *promenade(void *id_thread){
+void *client(void *id_thread){
     //int id = *((int*) id_thread);
 
     printf(ANSI_COLOR_MAGENTA"Le thread %i rentre en promenade\n"ANSI_COLOR_RESET, *((int*)id_thread));
@@ -34,6 +34,8 @@ void *promenade(void *id_thread){
 
     assert(nanosleep(&sleep_time,&sleep_time) == 0);
 
+    printf(ANSI_COLOR_MAGENTA"Le thread %i rentre de promenade\n"ANSI_COLOR_RESET, *((int*)id_thread));
+
   	salle_attente((int*)id_thread);
 
     return EXIT_SUCCESS;
@@ -44,12 +46,12 @@ void salle_attente(int *id_thread) {
     if (nombre_siege_disponible <= 0)
     {
         printf("Aucun siège disponible donc le thread %i part en vadrouille\n", *id_thread);
-        promenade((void*)id_thread);
+        client((void*)id_thread);
     }
 
 	pthread_mutex_lock(&promenadance);
     nombre_siege_disponible--;
-    printf(ANSI_COLOR_RED "On enleve un siege disponible: %i\n"ANSI_COLOR_RESET, nombre_siege_disponible);
+    printf(ANSI_COLOR_RED "On enleve un siege disponible: %i avec le thread %i\n"ANSI_COLOR_RESET, nombre_siege_disponible, *id_thread);
 	pthread_mutex_unlock(&promenadance);
 
 	/* Porte d'entrée : premier arrivé, premier servi */
@@ -60,33 +62,34 @@ void salle_attente(int *id_thread) {
 	/* On libère le siège  */
 	pthread_mutex_lock(&promenadance_end);
 	nombre_siege_disponible++;
-	printf(ANSI_COLOR_RED "On ajoute un siege disponible: %i\n"ANSI_COLOR_RESET, nombre_siege_disponible);
+	printf(ANSI_COLOR_RED "On ajoute un siege disponible: %i avec le thread %i\n"ANSI_COLOR_RESET, nombre_siege_disponible, *id_thread);
 	pthread_mutex_unlock(&promenadance_end);
 
+    printf(ANSI_COLOR_BLUE "Le thread %i va se faire tatouer\n"ANSI_COLOR_RESET, *id_thread);
 	/* Le Thread peut commencer a se faire tatouer */
     sem_post(&sem_start_tattoo);  // Lance un tatoueur
     sem_wait(&sem_end_tattoo); // attend la fin de son tattoo
     sem_post(&sem_fauteuils);  // libère le fauteuil ou il s'est fait tattouer
 
-    promenade((void*)id_thread); // Retourne se promener
+    client((void*)id_thread); // Retourne se promener
 }
-
-void *attente_tatoueur(void *params)
+/*
+void *tatoueur(void *params)
 {
     param_t_tattoo *param = (param_t_tattoo*) params;
 
-    do {
+    while (nombre_tattoo_eff != param->nombre_tatoos) {
+        printf("tattoo begin sem_start\n");
         sem_wait(&sem_start_tattoo); // Attend un client
-        tattoueur(params);
-    } while (nombre_tattoo_eff != param->nombre_tatoos);
-
-    return EXIT_SUCCESS;
+        printf("tattoo end sem_start\n");
+        tattouage(params);
+    }
 }
 
-void tattoueur (param_t_tattoo *params){
-    int id = *((int*) params->id_thread_tattoueurs);
+void tattouage (param_t_tattoo *params){
+    int id = params->id_thread_tattoueurs;
         
-	printf("Le tatouage va commencer pour le thread %i\n", id);
+	printf("Le tattoueur va commencer pour le thread tattoo %i\n", id);
 
 	sleep_time_tattoo.tv_sec = randomTatoo(TATOO_MIN_T, TATOO_MAX_T);
 	sleep_time_tattoo.tv_nsec = 0;
@@ -104,7 +107,7 @@ void tattoueur (param_t_tattoo *params){
 	
 	if (params->nombre_tatoos != nombre_tattoo_eff)
 	{
-		attente_tatoueur(params);
+        tatoueur(params);
 	}
 	else
 	{
@@ -112,7 +115,7 @@ void tattoueur (param_t_tattoo *params){
 		exit(0);
 	}
 }
-
+*/
 int main(int argc, char *argv[]) {
 
     if (argc < 4){
@@ -155,28 +158,28 @@ int main(int argc, char *argv[]) {
 	for (int i = 0; i < number_clients; i++)
 	{
         id_client[i]=i;
-		int code = pthread_create(&threads_clients[i], NULL, promenade, &id_client[i]);
+		int code = pthread_create(&threads_clients[i], NULL, client, &id_client[i]);
 		assert(code == 0);
 	}
-
+/*
     for (int i = 0; i < number_tatoueurs; i++)
     {
         params_tattoueurs[i].id_thread_tattoueurs = i;
         params_tattoueurs[i].nombre_tatoos = number_tattoos;
-		int code = pthread_create(&threads_tattoo[i], NULL, attente_tatoueur, &params_tattoueurs[i]);
+		int code = pthread_create(&threads_tattoo[i], NULL, tatoueur, &params_tattoueurs[i]);
 		assert(code == 0);
     }
-
+*/
     for (int k = 0; k < number_clients; k++){
       int codeJoin = pthread_join(threads_clients[k], NULL) != 0;
       assert(codeJoin == 0);
     }
-
+/*
     for (int l = 0; l < number_tatoueurs; l++){
       int codeJoin = pthread_join(threads_tattoo[l], NULL) != 0;
       assert(codeJoin == 0);
     }
-
+*/
 
     sem_destroy(&sem_fauteuils);
     sem_destroy(&sem_start_tattoo);
@@ -187,9 +190,6 @@ int main(int argc, char *argv[]) {
     pthread_mutex_destroy(&promenadance_end);
     pthread_mutex_destroy(&tattoueur_reveil);
     pthread_mutex_destroy(&mut_tattoo_eff);
-
-    //free(params_client.id_thread_client);
-    //free(params_client.id_thread_tattoueurs);
 
     return EXIT_SUCCESS;
 }

@@ -44,8 +44,9 @@ sem_t porte;
 int randomWalk(int a, int b);
 int randomTatoo(int a, int b);
 
+void *client(void *id_thread);
 void salle_attente(int *id_thread);
-void *promenade(void *params);
-void tattoueur (param_t_tattoo *params);
+void *tatoueur(void *params);
+void tattouage (param_t_tattoo *params);
 
 #endif

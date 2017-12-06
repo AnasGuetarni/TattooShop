@@ -17,4 +17,4 @@ run: TattooShop
 	./TattooShop  5 3 2 2
 
 clean:
-	rm -rf $(BINS) $(OBJS)
+	rm -rf $(BINS) $(OBJS) TattooShop

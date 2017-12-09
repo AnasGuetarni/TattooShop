@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
 	pthread_t threads_clients[number_clients];
 	pthread_t threads_tattoo[number_tattooist];
 
-	int id_client[number_clients];
+	param_t_client params_client[number_clients];
 	param_t_tattoo params_tattoueurs[number_tattooist];
 
 	nombre_tattoo_eff = 0;
@@ -54,8 +54,9 @@ int main(int argc, char *argv[]) {
 
 	for (int i = 0; i < number_clients; i++)
 	{
-		id_client[i]=i;
-		int code = pthread_create(&threads_clients[i], NULL, client, &id_client[i]);
+		params_client[i].id_thread_client = i;
+		params_client[i].nb_tattouage = 0;
+		int code = pthread_create(&threads_clients[i], NULL, client, &params_client[i]);
 		assert(code == 0);
 	}
 

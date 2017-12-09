@@ -20,6 +20,11 @@ typedef struct paramTTattoueur {
     int nb_tattoo_eff;
 }param_t_tattoo;
 
+typedef struct paramTClient {
+    int id_thread_client;
+    int nb_tattouage;
+}param_t_client;
+
 pthread_mutex_t promenadance;
 pthread_mutex_t promenadance_end;
 pthread_mutex_t tattooist_signal;
@@ -32,8 +37,8 @@ sem_t sem_end_tattoo;
 int randomWalk(int a, int b);
 int randomTatoo(int a, int b);
 
-void *client(void *id_thread);
-void salle_attente(int *id_thread);
+void *client(void *params);
+void salle_attente(param_t_client *params);
 void *tatoueur(void *params);
 void tattouage (param_t_tattoo *params);
 

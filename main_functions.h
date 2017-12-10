@@ -46,4 +46,6 @@ extern int nombre_siege_disponible;
 extern int nombre_tattoo_eff;
 extern unsigned int seed;
 
+
+
 #endif

@@ -6,9 +6,6 @@
 #include <time.h>
 #include "main_functions.h"
 
-struct timespec sleep_time_tattoo;
-struct timespec sleep_time;
-
 int randomWalk(int value_min, int value_max){
     return rand_r(&seed)%(value_max-value_min)+value_min;
 }
@@ -17,25 +14,19 @@ int randomTatoo(int value_min, int value_max){
     return rand_r(&seed)%(value_max-value_min)+value_min;
 }
 
-/*void stats(param_t_tattoo *params)
-{
-	
-	fprintf(stderr,"Id du tattoueur : %d, nombre de tattouage effectué par ce thread : %d \n", params->id_thread_tattoueurs, params->nb_tattoo_eff);
-	
-	
-}*/
-
 void *client(void *params){
+	
+	struct timespec sleep_time_client;
 	
 	param_t_client *param = (param_t_client*)params;
 	
 	printf(ANSI_COLOR_MAGENTA"Le thread %d rentre en promenade\n"ANSI_COLOR_RESET, param->id_thread_client);
 
-	sleep_time.tv_sec = randomWalk(WALK_MIN_T, WALK_MAX_T);
+	sleep_time_client.tv_sec = randomWalk(WALK_MIN_T, WALK_MAX_T);
 
-	printf(ANSI_COLOR_GREEN ".tvsec promenade: %d\n" ANSI_COLOR_RESET, (int)sleep_time.tv_sec );
+	printf(ANSI_COLOR_GREEN ".tvsec promenade: %d\n" ANSI_COLOR_RESET, (int)sleep_time_client.tv_sec);
 
-	assert(nanosleep(&sleep_time,NULL) == 0);
+	assert(nanosleep(&sleep_time_client,NULL) == 0);
 
 	printf(ANSI_COLOR_MAGENTA "Le thread %d rentre de promenade\n" ANSI_COLOR_RESET, param->id_thread_client);
 
@@ -94,13 +85,15 @@ void *tatoueur(void *params)
 }
 
 void tattouage (param_t_tattoo *params){
+	
+	struct timespec sleep_time_tattoo;
 	int id = params->id_thread_tattoueurs;
 
-	printf("Le tattoueur va commencer pour le thread tattoo %d\n", id);
+	printf("Le tattoueur n° %d va commencer \n", id);
 
 	sleep_time_tattoo.tv_sec = randomTatoo(TATOO_MIN_T, TATOO_MAX_T);
-
-	printf(ANSI_COLOR_GREEN".tvsec tattoo: %d\n"ANSI_COLOR_RESET,(int) sleep_time_tattoo.tv_sec);
+	
+	printf(ANSI_COLOR_GREEN".tvsec tattoo: %d\n"ANSI_COLOR_RESET, (int)sleep_time_tattoo.tv_sec);
 
 	assert(nanosleep(&sleep_time_tattoo,NULL) == 0);
 
@@ -111,7 +104,6 @@ void tattouage (param_t_tattoo *params){
 	
 	// Incrementer nb de tattoo fait par le tatoueur
 	params->nb_tattoo_eff++;
-	printf(ANSI_COLOR_YELLOW "Thread tatoueur : %d, nb Tattoo eff : %d \n" ANSI_COLOR_RESET, id, params->nb_tattoo_eff);
 
 	sem_post(&sem_end_tattoo); // On a finit le tattoo
 	

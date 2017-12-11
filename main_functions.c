@@ -82,6 +82,7 @@ void *tatoueur(void *params)
 		printf("tattoo end sem_start\n");
 		tattouage(params);
 	}
+  printf("Tous les tattouages ont été réalisés\n");
 	return NULL;
 }
 
@@ -106,7 +107,8 @@ void tattouage (param_t_tattoo *params){
 
 	// Incrementer nb de tattoo fait par le tatoueur
 	params->nb_tattoo_eff++;
-
+  params->nombre_tattoos_per_tattoo++;
+  printf("Le nombre de tattouage pour le tattoueur numéro %d est de %d\n", id, params->nombre_tattoos_per_tattoo);
 	sem_post(&sem_end_tattoo); // On a finit le tattoo
 
 	if (params->nombre_tatoos != nombre_tattoo_eff)

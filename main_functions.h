@@ -18,6 +18,7 @@ typedef struct paramTTattoueur {
     int id_thread_tattoueurs;
     int nombre_tatoos;
     int nb_tattoo_eff;
+    int nombre_tattoos_per_tattoo;
 }param_t_tattoo;
 
 typedef struct paramTClient {

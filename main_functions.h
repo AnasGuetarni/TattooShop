@@ -9,7 +9,7 @@
 #ifndef TATTOOSHOP_MAIN_FUNCTIONS
 #define TATTOOSHOP_MAIN_FUNCTIONS
 
-#define DEBUG 0
+#define DEBUG_TEST 0
 
 #ifdef DEBUG
 #define DEBUG_TEST 1

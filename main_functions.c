@@ -39,13 +39,13 @@ int randomTatoo(int value_min, int value_max){
 void stats()
 {
 	int i = 0, j = 0;
-	
+
 	while(stats_client[i] != -999)
 	{
 		fprintf(stderr, "Le client : %d a été tatoué :%d fois \n", i,stats_client[i]);
 		i++;
 	}
-	
+
 	while(stats_tattooist[j] != -999)
 	{
 		fprintf(stderr, "Le tatoueur : %d à tattouer %d fois \n", j, stats_tattooist[j]);
@@ -209,9 +209,9 @@ void tattouage (param_t_tattoo *params){
 	pthread_mutex_lock(&stats_tattooist_mut);
 	stats_tattooist[params->id_thread_tattoueurs]++;
 	pthread_mutex_unlock(&stats_tattooist_mut);
-	
+
 	sem_post(&sem_end_tattoo); // tattoo finished
-	
+
 	if (params->nombre_tatoos != nombre_tattoo_eff)
 	{
 		tatoueur(params);

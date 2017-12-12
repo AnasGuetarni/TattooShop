@@ -1,3 +1,11 @@
+/*
+ * @author Group12 - Guetarni Anas - Gay Melvin - Keraim Marwan
+ * @file : main.h
+ * @Main file for the program
+ *
+ * Initialize threads with mutex and semaphores
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -7,12 +15,23 @@
 #include <unistd.h>
 #include "main_functions.h"
 
+// Number global for tattoos and nanosleep
 int nombre_siege_disponible;
 int nombre_tattoo_eff;
 unsigned int seed;
 
+// Tabs for stats
 int *stats_client;
 int *stats_tattooist;
+
+/*
+* Main function who creates the program
+* Initializes all the semaphores and the mutex
+* Recups arguments in a tab and put them into variables
+* Initialization of size of the tabs for the stats
+* Initialize the clients and the tattooist threads
+* Destroy the mutex and the semaphores
+*/
 
 int main(int argc, char *argv[]) {
 
@@ -53,7 +72,7 @@ int main(int argc, char *argv[]) {
 	{
 		printf("L'allocation a échoué\n");
 	}
-	
+
 	// Fin de tableau
 	stats_client[number_clients] = -999;
 
@@ -62,8 +81,8 @@ int main(int argc, char *argv[]) {
 	{
 		printf("L'allocation a échoué\n");
 	}
-	
-		
+
+
 	// Fin de tableau
 	stats_tattooist[number_tattooist] = -999;
 

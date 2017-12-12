@@ -32,11 +32,12 @@ int main(int argc, char *argv[]) {
 	pthread_mutex_init(&tattooist_signal,NULL);
 	pthread_mutex_init(&mut_tattoo_eff,NULL);
 
-	printf(ANSI_COLOR_GREEN "Number of tattoos: %d" ANSI_COLOR_RESET "\n", number_tattoos);
-	printf(ANSI_COLOR_GREEN "Number of clients: %d" ANSI_COLOR_RESET "\n", number_clients);
-	printf(ANSI_COLOR_GREEN "Number of tattoueurs: %d" ANSI_COLOR_RESET "\n", number_tattooist);
-	printf(ANSI_COLOR_GREEN "Number of sieges: %d" ANSI_COLOR_RESET "\n", number_waiting_room_seats);
-	
+	#ifdef DEBUG
+		printf(ANSI_COLOR_GREEN "Number of tattoos: %d" ANSI_COLOR_RESET "\n", number_tattoos);
+		printf(ANSI_COLOR_GREEN "Number of clients: %d" ANSI_COLOR_RESET "\n", number_clients);
+		printf(ANSI_COLOR_GREEN "Number of tattoueurs: %d" ANSI_COLOR_RESET "\n", number_tattooist);
+		printf(ANSI_COLOR_GREEN "Number of sieges: %d" ANSI_COLOR_RESET "\n", number_waiting_room_seats);
+	#endif
 	// First seed
 	seed = time(NULL);
 

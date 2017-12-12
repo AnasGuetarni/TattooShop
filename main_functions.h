@@ -1,6 +1,16 @@
 #ifndef TATTOOSHOP_MAIN_FUNCTIONS
 #define TATTOOSHOP_MAIN_FUNCTIONS
 
+#define DEBUG 0
+
+#ifdef DEBUG
+#define DEBUG_TEST 1
+#define PRINTF(...) printf(__VA_ARGS__)
+#else
+#define DEBUG_TEST 0
+#endif
+
+
 #define WALK_MIN_T 5
 #define WALK_MAX_T 10
 #define TATOO_MIN_T 5

@@ -1,3 +1,9 @@
+/*
+ * @author Group12 - Guetarni Anas - Gay Melvin - Keraim Marwan
+ * @file : main_functions.c
+ * @Contain all functions needed in the program
+ *
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -8,14 +14,28 @@
 #include <unistd.h>
 #include "main_functions.h"
 
+/*
+ * Fonction randomWalk
+ * return a random walk time
+ * using rand_r which is tread-safe
+ */
 int randomWalk(int value_min, int value_max){
 	return rand_r(&seed)%(value_max-value_min)+value_min;
 }
 
+/*
+ * Fonction randomTatoo
+ * return a random time to make a tattoo
+ * using rand_r which is tread-safe
+ */
 int randomTatoo(int value_min, int value_max){
 	return rand_r(&seed)%(value_max-value_min)+value_min;
 }
 
+/*
+ * Function stats
+ * permit to show statistics
+ */
 void stats()
 {
 	int i = 0, j = 0;
@@ -32,6 +52,15 @@ void stats()
 		j++;
 	}
 }
+
+/*
+ * Fonction "*client"
+ * this fonction contain the comportement of client threads
+ *
+ * initialization of *param at the type param_t_client with *params wich was passed in parameters
+ * First time client will call the fonction randomWalk to go for a walk, so he goes into a state of sleep
+ * Once the walk is over he calls the function "salle_attente" with param in parameter
+ */
 void *client(void *params){
 
 	struct timespec sleep_time_client;
@@ -60,6 +89,20 @@ void *client(void *params){
 	return NULL;
 }
 
+
+/*
+ * Fonction "salle_attente"
+ *
+ * This function represent the waiting room of the tattoo shop
+ * When a thread (customer) arrives in, the waiting room decreases by 1 the number of available seats
+ *
+ * If the number of available seats drops below 0 when a customer enters, the number of seats available is reset to 0
+ * The customer leaves for a walk
+ *
+ * Else the thread will wait until a tattooist is available with using the semaphore
+ * once tattooist is available we increment the number of available seats then we launch the tattoo and client increment the number of tattoos he has
+ * once this tattoo was finished we increment the nb_tattouage and the customer calls the "client" function again (so go back on a walk)
+ */
 void salle_attente(param_t_client *params) {
 	pthread_mutex_lock(&promenadance);
 	nombre_siege_disponible--;
@@ -83,14 +126,14 @@ void salle_attente(param_t_client *params) {
 	client(params);
 	}
 
-	// Porte d'entrée : premier arrivé, premier servi
+
   #ifdef DEBUG
 	 printf(ANSI_COLOR_YELLOW "devant salle attente %d \n" ANSI_COLOR_RESET, params->id_thread_client);
   #endif
 
-  sem_wait(&sem_seats); // Regarde si un tatoueur est disponible
+  sem_wait(&sem_seats); // look if tattooist was available
 
-	// On libère le siège
+    // waiting seat was free
 	pthread_mutex_lock(&promenadance);
 	nombre_siege_disponible++;
 
@@ -104,17 +147,17 @@ void salle_attente(param_t_client *params) {
 	 printf(ANSI_COLOR_BLUE "Le thread %d va se faire tatouer\n"ANSI_COLOR_RESET, params->id_thread_client);
   #endif
 
-  // Le Thread peut commencer a se faire tatouer
-	sem_post(&sem_start_tattoo);  // Lance un tatoueur
-	sem_wait(&sem_end_tattoo); // attend la fin de son tattoo
-	sem_post(&sem_seats);  // libère le fauteuil ou il s'est fait tattouer
+    // Thread strats to get tattooed
+    sem_post(&sem_start_tattoo);  // launch tattoo
+    sem_wait(&sem_end_tattoo); // wait until the end of the tattoo
+    sem_post(&sem_seats); // tattoo seat free
 
-	// incrémente le nombre de tatouage fait sur son corps
+	// Increment the number of tattoo he had
 	pthread_mutex_lock(&stats_client_mut);
 	stats_client[params->id_thread_client]++;
 	pthread_mutex_unlock(&stats_client_mut);
 
-	client(params); // Retourne se promener
+	client(params); // Go back to walk
 }
 
 void *tatoueur(void *params)
@@ -128,6 +171,18 @@ void *tatoueur(void *params)
 	return NULL;
 }
 
+
+/*
+ * Fonction "tattouage"
+ *
+ * This function represent the action that the tattooist performs on the client
+ * First time tattooist will call the fonction randomTatoo to make a tattoo, so he goes into a state of sleep
+ *
+ * after the number of tattoos performed and the number of tattoos performed by the tattooist are incremented
+ *
+ * If the total number of tattoos is different from the number of tattoos wanted then we remind the "tatoueur" function
+ * Otherwise it means that we have done all our tattos so we finish the program
+*/
 void tattouage (param_t_tattoo *params){
 
 	struct timespec sleep_time_tattoo;
@@ -150,12 +205,12 @@ void tattouage (param_t_tattoo *params){
 	printf(ANSI_COLOR_YELLOW "Nombre de tattoo effectifs: %d\n" ANSI_COLOR_RESET, nombre_tattoo_eff);
 	pthread_mutex_unlock(&mut_tattoo_eff);
 
-	// Incrementer nb de tattoo fait par le tatoueur
+    // Incrementation of the number of tattoos performed
 	pthread_mutex_lock(&stats_tattooist_mut);
 	stats_tattooist[params->id_thread_tattoueurs]++;
 	pthread_mutex_unlock(&stats_tattooist_mut);
 	
-	sem_post(&sem_end_tattoo); // On a finit le tattoo
+	sem_post(&sem_end_tattoo); // tattoo finished
 	
 	if (params->nombre_tatoos != nombre_tattoo_eff)
 	{

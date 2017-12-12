@@ -5,16 +5,33 @@
 #include <semaphore.h>
 #include <time.h>
 #include <errno.h>
+#include <unistd.h>
 #include "main_functions.h"
 
 int randomWalk(int value_min, int value_max){
-    return rand_r(&seed)%(value_max-value_min)+value_min;
+	return rand_r(&seed)%(value_max-value_min)+value_min;
 }
 
 int randomTatoo(int value_min, int value_max){
-    return rand_r(&seed)%(value_max-value_min)+value_min;
+	return rand_r(&seed)%(value_max-value_min)+value_min;
 }
 
+void stats()
+{
+	int i = 0, j = 0;
+	
+	while(stats_client[i] != -999)
+	{
+		fprintf(stderr, "Le client : %d a été tatoué :%d fois \n", i,stats_client[i]);
+		i++;
+	}
+	
+	while(stats_tattooist[j] != -999)
+	{
+		fprintf(stderr, "Le tatoueur : %d à tattouer %d fois \n", j, stats_tattooist[j]);
+		j++;
+	}
+}
 void *client(void *params){
 
 	struct timespec sleep_time_client;
@@ -59,11 +76,11 @@ void salle_attente(param_t_client *params) {
 		nombre_siege_disponible = 0;
 		pthread_mutex_unlock(&promenadance);
 
-    #ifdef DEBUG
+	#ifdef DEBUG
 		  printf("Aucun siège disponible donc le thread %d part en vadrouille\n", params->id_thread_client);
-    #endif
+	#endif
 
-    client(params);
+	client(params);
 	}
 
 	// Porte d'entrée : premier arrivé, premier servi
@@ -81,7 +98,7 @@ void salle_attente(param_t_client *params) {
 	 printf(ANSI_COLOR_RED "On ajoute un siege disponible: %d avec le thread %d\n"ANSI_COLOR_RESET, nombre_siege_disponible, params->id_thread_client);
   #endif
 
-  pthread_mutex_unlock(&promenadance);
+	pthread_mutex_unlock(&promenadance);
 
   #ifdef DEBUG
 	 printf(ANSI_COLOR_BLUE "Le thread %d va se faire tatouer\n"ANSI_COLOR_RESET, params->id_thread_client);
@@ -92,7 +109,10 @@ void salle_attente(param_t_client *params) {
 	sem_wait(&sem_end_tattoo); // attend la fin de son tattoo
 	sem_post(&sem_seats);  // libère le fauteuil ou il s'est fait tattouer
 
-	params->nb_tattouage++; // incrémente le nombre de tatouage fait sur son corps
+	// incrémente le nombre de tatouage fait sur son corps
+	pthread_mutex_lock(&stats_client_mut);
+	stats_client[params->id_thread_client]++;
+	pthread_mutex_unlock(&stats_client_mut);
 
 	client(params); // Retourne se promener
 }
@@ -131,22 +151,19 @@ void tattouage (param_t_tattoo *params){
 	pthread_mutex_unlock(&mut_tattoo_eff);
 
 	// Incrementer nb de tattoo fait par le tatoueur
-	params->nb_tattoo_eff++;
-  params->nombre_tattoos_per_tattoo++;
-
-  #ifdef DEBUG
-    printf("Le nombre de tattouage pour le tattoueur numéro %d est de %d\n", params->id_thread_tattoueurs, params->nombre_tattoos_per_tattoo);
-  #endif
-
-  sem_post(&sem_end_tattoo); // On a finit le tattoo
-
+	pthread_mutex_lock(&stats_tattooist_mut);
+	stats_tattooist[params->id_thread_tattoueurs]++;
+	pthread_mutex_unlock(&stats_tattooist_mut);
+	
+	sem_post(&sem_end_tattoo); // On a finit le tattoo
+	
 	if (params->nombre_tatoos != nombre_tattoo_eff)
 	{
 		tatoueur(params);
 	}
 	else
 	{
-    printf("Tous les tattouages ont été réalisés\n");
+		printf("Tous les tattouages ont été réalisés\n");
 		exit(0);
 	}
 }

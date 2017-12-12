@@ -4,19 +4,23 @@
 #include <assert.h>
 #include <semaphore.h>
 #include <time.h>
+#include <unistd.h>
 #include "main_functions.h"
 
 int nombre_siege_disponible;
 int nombre_tattoo_eff;
 unsigned int seed;
 
+int *stats_client;
+int *stats_tattooist;
+
 int main(int argc, char *argv[]) {
 
 	if (argc != 5) {
-        fprintf(stderr, "Not enough arguments \n");
-        fprintf(stderr, "Usage: <number_tattoos> <number_clients> <number_tattooist> <number_waiting_room_seats> \n");
-        exit(EXIT_FAILURE);
-    }
+		fprintf(stderr, "Not enough arguments \n");
+		fprintf(stderr, "Usage: <number_tattoos> <number_clients> <number_tattooist> <number_waiting_room_seats> \n");
+		exit(EXIT_FAILURE);
+	}
 
 	int number_tattoos = atoi(argv[1]);
 	int number_clients = atoi(argv[2]);
@@ -44,6 +48,28 @@ int main(int argc, char *argv[]) {
 	assert(randomWalk(WALK_MIN_T,WALK_MAX_T) <= WALK_MAX_T && randomWalk(WALK_MIN_T,WALK_MAX_T) >= WALK_MIN_T);
 	assert(randomTatoo(TATOO_MIN_T, TATOO_MAX_T) <= TATOO_MAX_T && randomTatoo(TATOO_MIN_T, TATOO_MAX_T) >= TATOO_MIN_T);
 
+	stats_client = malloc(sizeof(int) * number_clients);
+	if(stats_client == NULL)
+	{
+		printf("L'allocation a échoué\n");
+	}
+	
+	// Fin de tableau
+	stats_client[number_clients] = -999;
+
+	stats_tattooist = malloc(number_tattooist * sizeof(int));
+	if(stats_client == NULL)
+	{
+		printf("L'allocation a échoué\n");
+	}
+	
+		
+	// Fin de tableau
+	stats_tattooist[number_tattooist] = -999;
+
+	int ae = atexit(stats);
+	assert(ae == 0);
+
 	pthread_t threads_clients[number_clients];
 	pthread_t threads_tattoo[number_tattooist];
 
@@ -56,7 +82,6 @@ int main(int argc, char *argv[]) {
 	for (int i = 0; i < number_clients; i++)
 	{
 		params_client[i].id_thread_client = i;
-		params_client[i].nb_tattouage = 0;
 		int code = pthread_create(&threads_clients[i], NULL, client, &params_client[i]);
 		assert(code == 0);
 	}
@@ -65,7 +90,6 @@ int main(int argc, char *argv[]) {
 	{
 		params_tattoueurs[i].id_thread_tattoueurs = i;
 		params_tattoueurs[i].nombre_tatoos = number_tattoos;
-		params_tattoueurs[i].nb_tattoo_eff = 0;
 		int code = pthread_create(&threads_tattoo[i], NULL, tatoueur, &params_tattoueurs[i]);
 		assert(code == 0);
 	}

@@ -25,21 +25,21 @@
 #define ANSI_COLOR_RESET   "\x1b[0m"
 
 typedef struct paramTTattoueur {
-    int id_thread_tattoueurs;
-    int nombre_tatoos;
-    int nb_tattoo_eff;
-    int nombre_tattoos_per_tattoo;
+	int id_thread_tattoueurs;
+	int nombre_tatoos;
 }param_t_tattoo;
 
 typedef struct paramTClient {
-    int id_thread_client;
-    int nb_tattouage;
+	int id_thread_client;
 }param_t_client;
 
 pthread_mutex_t promenadance;
 pthread_mutex_t promenadance_end;
 pthread_mutex_t tattooist_signal;
 pthread_mutex_t mut_tattoo_eff;
+
+pthread_mutex_t stats_client_mut;
+pthread_mutex_t stats_tattooist_mut;
 
 sem_t sem_seats;
 sem_t sem_start_tattoo;
@@ -52,11 +52,12 @@ void *client(void *params);
 void salle_attente(param_t_client *params);
 void *tatoueur(void *params);
 void tattouage (param_t_tattoo *params);
+void stats();
 
 extern int nombre_siege_disponible;
 extern int nombre_tattoo_eff;
 extern unsigned int seed;
 
-
-
+extern int *stats_client;
+extern int *stats_tattooist;
 #endif
